@@ -43,23 +43,23 @@ func NewService(repository Repository, logger log.Logger) Service {
 }
 
 type Day struct {
-	Date    time.Time
-	Moments []Moment
+	Date    time.Time `json:"date"`
+	Moments []Moment  `json:"moments"`
 }
 
 type Moment struct {
-	Type MomentType
-	Time time.Time
+	Type MomentType `json:"type"`
+	Time time.Time  `json:"time"`
 }
 
 type List struct {
-	ID       string
-	Name     string
-	Settings ListSettings
+	ID       string       `json:"id"`
+	Name     string       `json:"name"`
+	Settings ListSettings `json:"settings"`
 }
 
 type ListSettings struct {
-	DailyTime time.Duration
+	DailyTime time.Duration `json:"daily_time"`
 }
 
 type MomentType int
