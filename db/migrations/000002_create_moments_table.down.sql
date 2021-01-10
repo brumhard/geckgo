@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS moments;
+DROP TYPE IF EXISTS moment_type;
