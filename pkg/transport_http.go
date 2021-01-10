@@ -13,6 +13,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var errBadRoute = errors.New("bad route")
+
+const dateLayout = "2006-02-01"
+
 func MakeHandler(s Service, logger kitlog.Logger) http.Handler {
 	// TODO: add auth MW (https://github.com/go-kit/kit/tree/master/auth/jwt)
 	opts := []kithttp.ServerOption{
@@ -126,11 +130,6 @@ func contentTypeMW(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-var errBadRoute = errors.New("bad route")
-
-// days
-const dateLayout = "2006-02-01"
 
 func encodeJSONResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
 	if e, ok := response.(interface{ error() error }); ok && e.error() != nil {
