@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -35,7 +36,7 @@ type service struct {
 	logger log.Logger
 }
 
-func NewService(repository Repository, logger log.Logger) Service {
+func NewService(repository Repository, logger log.Logger, db *sql.DB) Service {
 	return &service{
 		repo:   repository,
 		logger: logger,
@@ -53,9 +54,9 @@ type Moment struct {
 }
 
 type List struct {
-	ID       string       `json:"id"`
-	Name     string       `json:"name"`
-	Settings ListSettings `json:"settings"`
+	ID       string        `json:"id"`
+	Name     string        `json:"name"`
+	Settings *ListSettings `json:"settings"`
 }
 
 type ListSettings struct {
