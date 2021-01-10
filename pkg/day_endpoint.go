@@ -7,9 +7,6 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
-// request, response
-// endpoints: https://github.com/go-kit/kit/blob/master/examples/shipping/booking/endpoint.go
-
 // TODO: check list id for day methods
 //AddDay(ctx context.Context, listID string, date time.Time, moments []Moment) (Day, error)
 type addDayRequest struct {
