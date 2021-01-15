@@ -1,4 +1,4 @@
-CREATE TYPE moment_type AS ENUM ('Start','StartBreak','StopBreak','End');
+CREATE TYPE moment_type AS ENUM ('start','startBreak','stopBreak','end');
 CREATE TABLE IF NOT EXISTS moments
 (
     id      serial,

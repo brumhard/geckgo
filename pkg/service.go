@@ -31,6 +31,8 @@ type Service interface {
 	EndDay(ctx context.Context, listID string, timeStamp time.Time) error
 }
 
+// TODO add user to lists
+
 type service struct {
 	repo   Repository
 	logger log.Logger
@@ -62,15 +64,6 @@ type List struct {
 type ListSettings struct {
 	DailyTime time.Duration `json:"daily_time"`
 }
-
-type MomentType int
-
-const (
-	Start MomentType = iota
-	StartBreak
-	StopBreak
-	End
-)
 
 type ListDaysOption func(*ListDayOptions)
 

@@ -2,8 +2,9 @@ package pkg
 
 import (
 	"context"
-	"database/sql"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 
 	"github.com/go-kit/kit/log"
 )
@@ -23,11 +24,11 @@ type Repository interface {
 }
 
 type repo struct {
-	db     *sql.DB
+	db     *sqlx.DB
 	logger log.Logger
 }
 
-func NewRepository(db *sql.DB, logger log.Logger) Repository {
+func NewRepository(db *sqlx.DB, logger log.Logger) Repository {
 	return &repo{
 		db:     db,
 		logger: logger,
@@ -36,20 +37,29 @@ func NewRepository(db *sql.DB, logger log.Logger) Repository {
 
 // AddList inserts a list into the db an returns the id of the newly created list.
 func (r *repo) AddList(ctx context.Context, list List) (int, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return 0, err
+	}
+
 	var id int
-	err := r.db.QueryRowContext(ctx, `INSERT INTO lists (name) VALUES ($1) RETURNING id`).Scan(&id)
+	err = tx.QueryRowContext(ctx, `INSERT INTO lists (name) VALUES ($1) RETURNING id`).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
 
 	if list.Settings != nil {
-		_, err := r.db.ExecContext(ctx,
+		_, err := tx.ExecContext(ctx,
 			"INSERT INTO list_settings (list_id, daily_time) VALUES ($1, $2)",
 			id, list.Settings.DailyTime,
 		)
 		if err != nil {
 			return 0, err
 		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
 	}
 
 	return id, nil
@@ -102,13 +112,18 @@ func (r *repo) GetListByID(ctx context.Context, listID string) (*List, error) {
 }
 
 func (r *repo) UpdateList(ctx context.Context, list List) error {
-	_, err := r.db.ExecContext(ctx, `UPDATE lists SET name=$1 WHERE id=$2`, list.Name, list.ID)
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.ExecContext(ctx, `UPDATE lists SET name=$1 WHERE id=$2`, list.Name, list.ID)
 	if err != nil {
 		return err
 	}
 
 	if list.Settings != nil {
-		_, err := r.db.ExecContext(ctx,
+		_, err := tx.ExecContext(ctx,
 			"UPDATE list_settings SET daily_time=$1 WHERE list_id=$2",
 			list.Settings.DailyTime, list.ID,
 		)
@@ -117,7 +132,7 @@ func (r *repo) UpdateList(ctx context.Context, list List) error {
 		}
 	}
 
-	return nil
+	return tx.Commit()
 }
 
 func (r *repo) DeleteListByID(ctx context.Context, listID string) error {
@@ -126,21 +141,105 @@ func (r *repo) DeleteListByID(ctx context.Context, listID string) error {
 }
 
 func (r *repo) AddDay(ctx context.Context, listID string, day Day) error {
-	panic("implement me")
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	insertStmt, err := tx.Prepare(`INSERT INTO moments (date, time, type, list_id) VALUES ($1, $2, $3, $4)`)
+	if err != nil {
+		return err
+	}
+
+	for _, moment := range day.Moments {
+		if _, err := insertStmt.ExecContext(ctx, insertStmt, moment.Time, moment.Time, moment.Type, listID); err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
 }
 
 func (r *repo) GetDays(ctx context.Context, listID string) ([]Day, error) {
-	panic("implement me")
+	rows, err := r.db.QueryContext(ctx,
+		"SELECT date, time, type FROM moments WHERE list_id = $1", listID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	dateToMoments := map[time.Time][]Moment{}
+
+	for rows.Next() {
+		var date time.Time
+		var moment Moment
+
+		err := rows.Scan(&date, &moment.Time, &moment.Type)
+		if err != nil {
+			return nil, err
+		}
+
+		moments, ok := dateToMoments[date]
+		if ok {
+			moments := []Moment{moment}
+			dateToMoments[date] = moments
+		}
+
+		moments = append(moments, moment)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	var days []Day
+	for date, moments := range dateToMoments {
+		days = append(days, Day{
+			Date:    date,
+			Moments: moments,
+		})
+	}
+
+	return days, nil
 }
 
 func (r *repo) GetDayByDate(ctx context.Context, listID string, date time.Time) (*Day, error) {
-	panic("implement me")
+	rows, err := r.db.QueryContext(ctx,
+		"SELECT date, time, type FROM moments WHERE date = $1 AND list_id = $2", date, listID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var moments []Moment
+	for rows.Next() {
+		var moment Moment
+
+		err := rows.Scan(&date, &moment.Time, &moment.Type)
+		if err != nil {
+			return nil, err
+		}
+
+		moments = append(moments, moment)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return &Day{Date: date, Moments: moments}, nil
 }
 
 func (r *repo) UpdateDay(ctx context.Context, listID string, day Day) error {
-	panic("implement me")
+	if err := r.DeleteDayByDate(ctx, listID, day.Date); err != nil {
+		return err
+	}
+
+	return r.AddDay(ctx, listID, day)
 }
 
 func (r *repo) DeleteDayByDate(ctx context.Context, listID string, date time.Time) error {
-	panic("implement me")
+	_, err := r.db.ExecContext(ctx, "DELETE FROM moments WHERE date = $1 AND list_id = $2", date, listID)
+	return err
 }
