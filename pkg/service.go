@@ -31,8 +31,6 @@ type Service interface {
 	EndDay(ctx context.Context, listID string, timeStamp time.Time) error
 }
 
-// TODO add user to lists
-
 type service struct {
 	repo   Repository
 	logger log.Logger
