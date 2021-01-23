@@ -60,7 +60,7 @@ type List struct {
 }
 
 type ListSettings struct {
-	DailyTime *time.Duration `json:"omitempty,daily_time"`
+	DailyTime *Duration `json:"omitempty,daily_time"`
 }
 
 type ListDaysOption func(*ListDayOptions)

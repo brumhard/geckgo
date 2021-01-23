@@ -3,6 +3,7 @@ package pkg
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 
@@ -91,7 +92,6 @@ var _ = Describe("repo", func() {
 		driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 		Expect(err).ToNot(HaveOccurred())
 		migrations, err = migrate.NewWithDatabaseInstance(
-			// TODO: is this the right URL?
 			"file://../db/migrations",
 			database, driver)
 		Expect(err).ToNot(HaveOccurred())
@@ -101,21 +101,93 @@ var _ = Describe("repo", func() {
 		Expect(migrations.Down()).To(Succeed())
 	})
 	Describe("Integration", func() {
-		Context("AddList -> GetListByID", func() {
-			It("works", func() {
-				ctx := context.Background()
+		var ctx = context.Background()
+		var id int
+
+		Context("no settings", func() {
+			BeforeEach(func() {
+				// AddList
 				testList := List{Name: "miau"}
 
-				id, err := repo.AddList(ctx, testList)
+				var err error
+				id, err = repo.AddList(ctx, testList)
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(id).To(Equal(1))
+			})
+			Describe("AddList -> GetListByID", func() {
+				It("works", func() {
+					list, err := repo.GetListByID(ctx, id)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(list).To(Equal(&List{Name: "miau", ID: id, Settings: nil}))
+				})
+			})
+			Describe("AddList -> GetLists", func() {
+				It("works", func() {
+					lists, err := repo.GetLists(ctx)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(lists).To(Equal([]List{{Name: "miau", ID: id, Settings: nil}}))
+				})
+			})
+			Describe("AddList -> UpdateList -> GetListById", func() {
+				It("works", func() {
+					Expect(repo.UpdateList(ctx, List{ID: 1, Name: "lol"})).To(Succeed())
 
-				list, err := repo.GetListByID(ctx, id)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(list).To(Equal(&List{Name: "miau", ID: 1, Settings: nil}))
+					lists, err := repo.GetLists(ctx)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(lists).To(Equal([]List{{Name: "lol", ID: 1, Settings: nil}}))
+				})
+				Context("add settings", func() {
+					It("works", func() {
+						dailyTime := 8 * time.Hour
+						updated := List{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{dailyTime}}}
+						Expect(repo.UpdateList(ctx, updated)).To(Succeed())
+
+						lists, err := repo.GetLists(ctx)
+						Expect(err).ToNot(HaveOccurred())
+						Expect(lists).To(Equal([]List{{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{dailyTime}}}}))
+					})
+				})
 			})
 		})
+		Context("settings set", func() {
+			var dailyTime time.Duration
+			BeforeEach(func() {
+				// AddList with settings
+				dailyTime = 8 * time.Hour
+				testList := List{Name: "miau", Settings: &ListSettings{DailyTime: &Duration{dailyTime}}}
 
+				var err error
+				id, err = repo.AddList(ctx, testList)
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(id).To(Equal(1))
+			})
+			Describe("AddList -> GetListByID", func() {
+				It("works", func() {
+					list, err := repo.GetListByID(ctx, id)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(list).To(Equal(&List{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{dailyTime}}}))
+				})
+			})
+			Describe("AddList -> GetLists", func() {
+				It("works", func() {
+					lists, err := repo.GetLists(ctx)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(lists).To(Equal([]List{{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{dailyTime}}}}))
+				})
+			})
+			Describe("AddList -> UpdateList -> GetListById", func() {
+				It("updates settings", func() {
+					updatedDailyTime := 9 * time.Hour
+					updated := List{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{updatedDailyTime}}}
+					Expect(repo.UpdateList(ctx, updated)).To(Succeed())
+
+					lists, err := repo.GetLists(ctx)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(lists).To(Equal([]List{{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{updatedDailyTime}}}}))
+				})
+			})
+		})
 	})
 })

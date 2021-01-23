@@ -77,11 +77,16 @@ func (r *repo) GetLists(ctx context.Context) ([]List, error) {
 	var lists []List
 
 	for rows.Next() {
-		list := List{Settings: &ListSettings{}}
+		list := List{}
+		listSettings := &ListSettings{}
 
-		err := rows.Scan(&list.ID, &list.Name, &list.Settings.DailyTime)
+		err := rows.Scan(&list.ID, &list.Name, &listSettings.DailyTime)
 		if err != nil {
 			return nil, err
+		}
+
+		if listSettings.DailyTime != nil {
+			list.Settings = listSettings
 		}
 
 		lists = append(lists, list)
@@ -129,8 +134,8 @@ func (r *repo) UpdateList(ctx context.Context, list List) error {
 
 	if list.Settings != nil {
 		_, err := tx.ExecContext(ctx,
-			"UPDATE list_settings SET daily_time=$1 WHERE list_id=$2",
-			list.Settings.DailyTime, list.ID,
+			"INSERT INTO list_settings (list_id, daily_time) VALUES ($1, $2) ON CONFLICT (list_id) DO UPDATE SET daily_time=$2",
+			list.ID, list.Settings.DailyTime,
 		)
 		if err != nil {
 			return err
