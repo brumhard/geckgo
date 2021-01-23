@@ -54,13 +54,13 @@ type Moment struct {
 }
 
 type List struct {
-	ID       string        `json:"id"`
+	ID       int           `json:"id"`
 	Name     string        `json:"name"`
 	Settings *ListSettings `json:"settings"`
 }
 
 type ListSettings struct {
-	DailyTime time.Duration `json:"daily_time"`
+	DailyTime *time.Duration `json:"omitempty,daily_time"`
 }
 
 type ListDaysOption func(*ListDayOptions)

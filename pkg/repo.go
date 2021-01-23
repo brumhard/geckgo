@@ -12,15 +12,15 @@ import (
 type Repository interface {
 	AddList(ctx context.Context, list List) (int, error)
 	GetLists(ctx context.Context) ([]List, error)
-	GetListByID(ctx context.Context, listID string) (*List, error)
+	GetListByID(ctx context.Context, listID int) (*List, error)
 	UpdateList(ctx context.Context, list List) error
-	DeleteListByID(ctx context.Context, listID string) error
+	DeleteListByID(ctx context.Context, listID int) error
 
-	AddDay(ctx context.Context, listID string, day Day) error
-	GetDays(ctx context.Context, listID string) ([]Day, error)
-	GetDayByDate(ctx context.Context, listID string, date time.Time) (*Day, error)
-	UpdateDay(ctx context.Context, listID string, day Day) error
-	DeleteDayByDate(ctx context.Context, listID string, date time.Time) error
+	AddDay(ctx context.Context, listID int, day Day) error
+	GetDays(ctx context.Context, listID int) ([]Day, error)
+	GetDayByDate(ctx context.Context, listID int, date time.Time) (*Day, error)
+	UpdateDay(ctx context.Context, listID int, day Day) error
+	DeleteDayByDate(ctx context.Context, listID int, date time.Time) error
 }
 
 type repo struct {
@@ -43,7 +43,7 @@ func (r *repo) AddList(ctx context.Context, list List) (int, error) {
 	}
 
 	var id int
-	err = tx.QueryRowContext(ctx, `INSERT INTO lists (name) VALUES ($1) RETURNING id`).Scan(&id)
+	err = tx.QueryRowContext(ctx, `INSERT INTO lists (name) VALUES ($1) RETURNING id`, list.Name).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -94,18 +94,23 @@ func (r *repo) GetLists(ctx context.Context) ([]List, error) {
 	return lists, err
 }
 
-func (r *repo) GetListByID(ctx context.Context, listID string) (*List, error) {
-	list := &List{Settings: &ListSettings{}}
+func (r *repo) GetListByID(ctx context.Context, listID int) (*List, error) {
+	list := &List{}
+	listSettings := &ListSettings{}
+
 	err := r.db.QueryRowContext(ctx,
 		`SELECT l.id, l.name, ls.daily_time 
 				FROM lists l 
 				LEFT JOIN list_settings ls on l.id = ls.list_id
 				WHERE l.id=$1`,
 		listID,
-	).Scan(&list.ID, &list.Name, &list.Settings.DailyTime)
-
+	).Scan(&list.ID, &list.Name, &listSettings.DailyTime)
 	if err != nil {
 		return nil, err
+	}
+
+	if listSettings.DailyTime != nil {
+		list.Settings = listSettings
 	}
 
 	return list, nil
@@ -135,12 +140,12 @@ func (r *repo) UpdateList(ctx context.Context, list List) error {
 	return tx.Commit()
 }
 
-func (r *repo) DeleteListByID(ctx context.Context, listID string) error {
+func (r *repo) DeleteListByID(ctx context.Context, listID int) error {
 	_, err := r.db.ExecContext(ctx, `DELETE FROM lists WHERE id=$1`, listID)
 	return err
 }
 
-func (r *repo) AddDay(ctx context.Context, listID string, day Day) error {
+func (r *repo) AddDay(ctx context.Context, listID int, day Day) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -160,7 +165,7 @@ func (r *repo) AddDay(ctx context.Context, listID string, day Day) error {
 	return tx.Commit()
 }
 
-func (r *repo) GetDays(ctx context.Context, listID string) ([]Day, error) {
+func (r *repo) GetDays(ctx context.Context, listID int) ([]Day, error) {
 	rows, err := r.db.QueryContext(ctx,
 		"SELECT date, time, type FROM moments WHERE list_id = $1", listID,
 	)
@@ -204,7 +209,7 @@ func (r *repo) GetDays(ctx context.Context, listID string) ([]Day, error) {
 	return days, nil
 }
 
-func (r *repo) GetDayByDate(ctx context.Context, listID string, date time.Time) (*Day, error) {
+func (r *repo) GetDayByDate(ctx context.Context, listID int, date time.Time) (*Day, error) {
 	rows, err := r.db.QueryContext(ctx,
 		"SELECT date, time, type FROM moments WHERE date = $1 AND list_id = $2", date, listID,
 	)
@@ -231,7 +236,7 @@ func (r *repo) GetDayByDate(ctx context.Context, listID string, date time.Time) 
 	return &Day{Date: date, Moments: moments}, nil
 }
 
-func (r *repo) UpdateDay(ctx context.Context, listID string, day Day) error {
+func (r *repo) UpdateDay(ctx context.Context, listID int, day Day) error {
 	if err := r.DeleteDayByDate(ctx, listID, day.Date); err != nil {
 		return err
 	}
@@ -239,7 +244,7 @@ func (r *repo) UpdateDay(ctx context.Context, listID string, day Day) error {
 	return r.AddDay(ctx, listID, day)
 }
 
-func (r *repo) DeleteDayByDate(ctx context.Context, listID string, date time.Time) error {
+func (r *repo) DeleteDayByDate(ctx context.Context, listID int, date time.Time) error {
 	_, err := r.db.ExecContext(ctx, "DELETE FROM moments WHERE date = $1 AND list_id = $2", date, listID)
 	return err
 }
