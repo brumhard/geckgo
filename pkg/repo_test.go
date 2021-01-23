@@ -133,9 +133,9 @@ var _ = Describe("repo", func() {
 				It("works", func() {
 					Expect(repo.UpdateList(ctx, List{ID: 1, Name: "lol"})).To(Succeed())
 
-					lists, err := repo.GetLists(ctx)
+					lists, err := repo.GetListByID(ctx, id)
 					Expect(err).ToNot(HaveOccurred())
-					Expect(lists).To(Equal([]List{{Name: "lol", ID: 1, Settings: nil}}))
+					Expect(lists).To(Equal(&List{Name: "lol", ID: 1, Settings: nil}))
 				})
 				Context("add settings", func() {
 					It("works", func() {
@@ -143,9 +143,9 @@ var _ = Describe("repo", func() {
 						updated := List{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{dailyTime}}}
 						Expect(repo.UpdateList(ctx, updated)).To(Succeed())
 
-						lists, err := repo.GetLists(ctx)
+						lists, err := repo.GetListByID(ctx, id)
 						Expect(err).ToNot(HaveOccurred())
-						Expect(lists).To(Equal([]List{{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{dailyTime}}}}))
+						Expect(lists).To(Equal(&List{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{dailyTime}}}))
 					})
 				})
 			})
@@ -183,9 +183,9 @@ var _ = Describe("repo", func() {
 					updated := List{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{updatedDailyTime}}}
 					Expect(repo.UpdateList(ctx, updated)).To(Succeed())
 
-					lists, err := repo.GetLists(ctx)
+					lists, err := repo.GetListByID(ctx, id)
 					Expect(err).ToNot(HaveOccurred())
-					Expect(lists).To(Equal([]List{{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{updatedDailyTime}}}}))
+					Expect(lists).To(Equal(&List{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{updatedDailyTime}}}))
 				})
 			})
 		})
