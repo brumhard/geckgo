@@ -95,7 +95,7 @@ func (r *repo) GetLists(ctx context.Context) ([]List, error) {
 		lists = append(lists, list)
 	}
 
-	if rows.Err() != nil {
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
@@ -125,19 +125,23 @@ func (r *repo) GetListByID(ctx context.Context, listID int) (*List, error) {
 }
 
 func (r *repo) UpdateList(ctx context.Context, list List) error {
-	tx, err := r.db.Begin()
+	rows, err := r.db.QueryContext(ctx, `UPDATE lists SET name=$1 WHERE id=$2 RETURNING id`, list.Name, list.ID)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, `UPDATE lists SET name=$1 WHERE id=$2`, list.Name, list.ID)
-	if err != nil {
+	if err := rows.Err(); err != nil {
 		return err
+	}
+
+	// if nothing has been updated
+	if !rows.Next() {
+		return ErrNotFound
 	}
 
 	if list.Settings != nil {
-		_, err := tx.ExecContext(ctx,
-			"INSERT INTO list_settings (list_id, daily_time) VALUES ($1, $2) ON CONFLICT (list_id) DO UPDATE SET daily_time=$2",
+		_, err := r.db.ExecContext(ctx,
+			`INSERT INTO list_settings (list_id, daily_time) VALUES ($1, $2) ON CONFLICT (list_id) DO UPDATE SET daily_time=$2`,
 			list.ID, list.Settings.DailyTime,
 		)
 		if err != nil {
@@ -145,7 +149,7 @@ func (r *repo) UpdateList(ctx context.Context, list List) error {
 		}
 	}
 
-	return tx.Commit()
+	return nil
 }
 
 func (r *repo) DeleteListByID(ctx context.Context, listID int) error {
@@ -203,7 +207,7 @@ func (r *repo) GetDays(ctx context.Context, listID int) ([]Day, error) {
 		dateToMoments[date] = append(moments, moment)
 	}
 
-	if rows.Err() != nil {
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
@@ -238,7 +242,7 @@ func (r *repo) GetDayByDate(ctx context.Context, listID int, date time.Time) (*D
 		moments = append(moments, moment)
 	}
 
-	if rows.Err() != nil {
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 

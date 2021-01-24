@@ -59,22 +59,22 @@ var _ = Describe("repo", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
-		connectStr := fmt.Sprintf(
+		connectString := fmt.Sprintf(
 			"host=localhost port=%s user=%s password=%s dbname=%s sslmode=disable",
 			resource.GetPort(fmt.Sprintf("%d/tcp", port)), user, password, database,
 		)
 
 		err = pool.Retry(func() error {
-			db, err = sqlx.Connect(driver, connectStr)
+			db, err = sqlx.Connect(driver, connectString)
 
 			return err
 		})
 		Expect(err).ToNot(HaveOccurred())
 
-		return []byte(connectStr) // return connect string here?
-	}, func(data []byte) {
+		return []byte(connectString) // return connect string here?
+	}, func(connectString []byte) {
 		var err error
-		db, err = sqlx.Connect(driver, string(data))
+		db, err = sqlx.Connect(driver, string(connectString))
 		Expect(err).ToNot(HaveOccurred())
 	})
 	SynchronizedAfterSuite(func() {}, func() {
@@ -143,7 +143,8 @@ var _ = Describe("repo", func() {
 				})
 				Describe("AddList -> UpdateList -> GetListById", func() {
 					It("works", func() {
-						Expect(repo.UpdateList(ctx, List{ID: 1, Name: "lol"})).To(Succeed())
+						err := repo.UpdateList(ctx, List{ID: 1, Name: "lol"})
+						Expect(err).ToNot(HaveOccurred())
 
 						lists, err := repo.GetListByID(ctx, id)
 						Expect(err).ToNot(HaveOccurred())
@@ -153,7 +154,8 @@ var _ = Describe("repo", func() {
 						It("works", func() {
 							dailyTime := 8 * time.Hour
 							updated := List{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{dailyTime}}}
-							Expect(repo.UpdateList(ctx, updated)).To(Succeed())
+							err := repo.UpdateList(ctx, updated)
+							Expect(err).To(Succeed())
 
 							lists, err := repo.GetListByID(ctx, id)
 							Expect(err).ToNot(HaveOccurred())
@@ -166,11 +168,11 @@ var _ = Describe("repo", func() {
 						Expect(repo.DeleteListByID(ctx, 420)).To(Succeed())
 					})
 				})
-				//Describe("UpdateList non existing", func() {
-				//	It("returns err", func() {
-				//		Expect(repo.UpdateList(ctx, List{ID: 420, Name: "lel"})).ToNot(Succeed())
-				//	})
-				//})
+				Describe("UpdateList non existing", func() {
+					It("returns err", func() {
+						Expect(repo.UpdateList(ctx, List{ID: 420, Name: "lel"})).ToNot(Succeed())
+					})
+				})
 			})
 			Context("settings set", func() {
 				var dailyTime time.Duration
@@ -203,7 +205,8 @@ var _ = Describe("repo", func() {
 					It("updates settings", func() {
 						updatedDailyTime := 9 * time.Hour
 						updated := List{Name: "miau", ID: id, Settings: &ListSettings{DailyTime: &Duration{updatedDailyTime}}}
-						Expect(repo.UpdateList(ctx, updated)).To(Succeed())
+						err := repo.UpdateList(ctx, updated)
+						Expect(err).To(Succeed())
 
 						lists, err := repo.GetListByID(ctx, id)
 						Expect(err).ToNot(HaveOccurred())
