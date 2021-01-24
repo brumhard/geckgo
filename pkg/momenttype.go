@@ -13,13 +13,13 @@ type MomentType int
 const (
 	MomentTypeStart MomentType = iota
 	MomentTypeStartBreak
-	MomentTypeStopBreak
+	MomentTypeEndBreak
 	MomentTypeEnd
 )
 
 // TODO: add validation for MomentType enum
 func (t MomentType) String() string {
-	return []string{"start", "startBreak", "stopBreak", "end"}[t]
+	return []string{"start", "startBreak", "endBreak", "end"}[t]
 }
 
 func (t MomentType) StrErr() (string, error) {
@@ -35,8 +35,8 @@ func (t *MomentType) ReadStr(str string) error {
 		*t = MomentTypeStart
 	case "startBreak":
 		*t = MomentTypeStartBreak
-	case "stopBreak":
-		*t = MomentTypeStopBreak
+	case "endBreak":
+		*t = MomentTypeEndBreak
 	case "end":
 		*t = MomentTypeEnd
 	default:

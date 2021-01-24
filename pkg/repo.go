@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -22,6 +23,8 @@ type Repository interface {
 	UpdateDay(ctx context.Context, listID int, day Day) error
 	DeleteDayByDate(ctx context.Context, listID int, date time.Time) error
 }
+
+var ErrNotFound = errors.New("not found")
 
 type repo struct {
 	db     *sqlx.DB
@@ -162,7 +165,7 @@ func (r *repo) AddDay(ctx context.Context, listID int, day Day) error {
 	}
 
 	for _, moment := range day.Moments {
-		if _, err := insertStmt.ExecContext(ctx, insertStmt, moment.Time, moment.Time, moment.Type, listID); err != nil {
+		if _, err := insertStmt.ExecContext(ctx, moment.Time.UTC(), moment.Time.UTC(), moment.Type, listID); err != nil {
 			return err
 		}
 	}
@@ -182,8 +185,10 @@ func (r *repo) GetDays(ctx context.Context, listID int) ([]Day, error) {
 	dateToMoments := map[time.Time][]Moment{}
 
 	for rows.Next() {
-		var date time.Time
-		var moment Moment
+		var (
+			date   time.Time
+			moment Moment
+		)
 
 		err := rows.Scan(&date, &moment.Time, &moment.Type)
 		if err != nil {
@@ -191,12 +196,11 @@ func (r *repo) GetDays(ctx context.Context, listID int) ([]Day, error) {
 		}
 
 		moments, ok := dateToMoments[date]
-		if ok {
-			moments := []Moment{moment}
-			dateToMoments[date] = moments
+		if !ok {
+			moments = []Moment{}
 		}
 
-		moments = append(moments, moment)
+		dateToMoments[date] = append(moments, moment)
 	}
 
 	if rows.Err() != nil {
