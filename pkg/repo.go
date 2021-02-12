@@ -140,6 +140,9 @@ func (r *repo) UpdateList(ctx context.Context, list List) error {
 	}
 
 	if list.Settings != nil {
+		// if the list is deleted after the check at the start
+		// it should still not create an orphan entry since this would
+		// not work with the foreign key constraint.
 		_, err := r.db.ExecContext(ctx,
 			`INSERT INTO list_settings (list_id, daily_time) VALUES ($1, $2) ON CONFLICT (list_id) DO UPDATE SET daily_time=$2`,
 			list.ID, list.Settings.DailyTime,
@@ -249,6 +252,7 @@ func (r *repo) GetDayByDate(ctx context.Context, listID int, date time.Time) (*D
 	return &Day{Date: date, Moments: moments}, nil
 }
 
+// TODO: return err if day not found?
 func (r *repo) UpdateDay(ctx context.Context, listID int, day Day) error {
 	if err := r.DeleteDayByDate(ctx, listID, day.Date); err != nil {
 		return err
@@ -257,6 +261,7 @@ func (r *repo) UpdateDay(ctx context.Context, listID int, day Day) error {
 	return r.AddDay(ctx, listID, day)
 }
 
+// TODO: add test that it does not return err even if not found
 func (r *repo) DeleteDayByDate(ctx context.Context, listID int, date time.Time) error {
 	_, err := r.db.ExecContext(ctx, "DELETE FROM moments WHERE date = $1 AND list_id = $2", date, listID)
 	return err
