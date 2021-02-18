@@ -14,7 +14,7 @@ type Service interface {
 	GetLists(ctx context.Context) ([]List, error)
 	GetList(ctx context.Context, listID int) (*List, error)
 	// TODO listsettings as optional?
-	UpdateList(ctx context.Context, listID int, settings ListSettings) (*List, error)
+	UpdateList(ctx context.Context, listID int, settings *ListSettings) (*List, error)
 	DeleteList(ctx context.Context, listID int) error
 
 	// days
@@ -92,32 +92,66 @@ func (s service) GetList(ctx context.Context, listID int) (*List, error) {
 	return s.repo.GetListByID(ctx, listID)
 }
 
-func (s service) UpdateList(ctx context.Context, listID int, settings ListSettings) (*List, error) {
-	panic("implement me")
+func (s service) UpdateList(ctx context.Context, listID int, settings *ListSettings) (*List, error) {
+	toUpdate, err := s.repo.GetListByID(ctx, listID)
+	if err != nil {
+		return nil, err
+	}
+
+	toUpdate.Settings = settings
+
+	err = s.repo.UpdateList(ctx, *toUpdate)
+	if err != nil {
+		return nil, err
+	}
+
+	return toUpdate, nil
 }
 
 func (s service) DeleteList(ctx context.Context, listID int) error {
-	panic("implement me")
+	return s.repo.DeleteListByID(ctx, listID)
 }
 
 func (s service) AddDay(ctx context.Context, listID int, date time.Time, moments []Moment) (*Day, error) {
-	panic("implement me")
+	newDay := Day{
+		Date:    date,
+		Moments: moments,
+	}
+
+	err := s.repo.AddDay(ctx, listID, newDay)
+	if err != nil {
+		return nil, err
+	}
+
+	return &newDay, err
 }
 
 func (s service) GetDays(ctx context.Context, listID int, opts ...ListDaysOption) ([]Day, error) {
-	panic("implement me")
+	return s.repo.GetDays(ctx, listID)
 }
 
 func (s service) GetDay(ctx context.Context, listID int, date time.Time) (*Day, error) {
-	panic("implement me")
+	return s.repo.GetDayByDate(ctx, listID, date)
 }
 
 func (s service) UpdateDay(ctx context.Context, listID int, date time.Time, moments []Moment) (*Day, error) {
-	panic("implement me")
+	toUpdate, err := s.repo.GetDayByDate(ctx, listID, date)
+	if err != nil {
+		return nil, err
+	}
+
+	toUpdate.Moments = moments
+
+	err = s.repo.UpdateDay(ctx, listID, *toUpdate)
+	if err != nil {
+		return nil, err
+	}
+
+	return toUpdate, nil
 }
 
 func (s service) DeleteDay(ctx context.Context, listID int, date time.Time) error {
-	panic("implement me")
+	return s.repo.DeleteDayByDate(ctx, listID, date)
 }
 
 func (s service) StartDay(ctx context.Context, listID int, timeStamp time.Time) error {
