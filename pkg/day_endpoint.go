@@ -8,15 +8,15 @@ import (
 )
 
 // TODO: check list id for day methods
-//AddDay(ctx context.Context, listID string, date time.Time, moments []Moment) (Day, error)
+//AddDay(ctx context.Context, listID int, date time.Time, moments []Moment) (Day, error)
 type addDayRequest struct {
-	ListID  string
+	ListID  int
 	Date    time.Time
 	Moments []Moment
 }
 
 type addDayResponse struct {
-	Day Day   `json:"day"`
+	Day *Day  `json:"day"`
 	Err error `json:"err"`
 }
 
@@ -34,9 +34,9 @@ func makeAddDayEndpoint(s Service) endpoint.Endpoint {
 	}
 }
 
-//GetDays(ctx context.Context, listID string, opts ...ListDaysOption) ([]Day, error)
+//GetDays(ctx context.Context, listID int, opts ...ListDaysOption) ([]Day, error)
 type getDaysRequest struct {
-	ListID string
+	ListID int
 }
 
 type getDaysResponse struct {
@@ -59,14 +59,14 @@ func makeGetDaysEndpoint(s Service) endpoint.Endpoint {
 	}
 }
 
-//GetDay(ctx context.Context, listID string, date time.Time) (Day, error)
+//GetDay(ctx context.Context, listID int, date time.Time) (Day, error)
 type getDayRequest struct {
-	ListID string
+	ListID int
 	Date   time.Time
 }
 
 type getDayResponse struct {
-	Days Day   `json:"days"`
+	Days *Day  `json:"days"`
 	Err  error `json:"err"`
 }
 
@@ -76,6 +76,7 @@ func makeGetDayEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(getDayRequest)
 		day, err := s.GetDay(ctx, req.ListID, req.Date)
+
 		return getDayResponse{
 			Days: day,
 			Err:  err,
@@ -83,15 +84,15 @@ func makeGetDayEndpoint(s Service) endpoint.Endpoint {
 	}
 }
 
-//UpdateDay(ctx context.Context, listID string, date time.Time, moments []Moment) (Day, error)
+//UpdateDay(ctx context.Context, listID int, date time.Time, moments []Moment) (Day, error)
 type updateDayRequest struct {
-	ListID  string
+	ListID  int
 	Date    time.Time
 	Moments []Moment
 }
 
 type updateDayResponse struct {
-	Days Day   `json:"days"`
+	Days *Day  `json:"days"`
 	Err  error `json:"err"`
 }
 
@@ -109,9 +110,9 @@ func makeUpdateDayEndpoint(s Service) endpoint.Endpoint {
 	}
 }
 
-//DeleteDay(ctx context.Context, listID string, date time.Time) error
+//DeleteDay(ctx context.Context, listID int, date time.Time) error
 type deleteDayRequest struct {
-	ListID  string
+	ListID  int
 	Date    time.Time
 	Moments []Moment
 }

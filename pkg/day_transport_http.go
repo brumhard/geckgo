@@ -4,15 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
 )
 
-//AddDay(ctx context.Context, listID string, date time.Time, moments []Moment) (Day, error)
+//AddDay(ctx context.Context, listID int, date time.Time, moments []Moment) (Day, error)
 func decodeAddDayRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	vars := mux.Vars(r)
-	id, ok := vars["listId"]
+	idString, ok := vars["listId"]
 	if !ok {
 		return nil, errBadRoute
 	}
@@ -20,6 +21,11 @@ func decodeAddDayRequest(_ context.Context, r *http.Request) (interface{}, error
 	dateString, ok := vars["date"]
 	if !ok {
 		return nil, errBadRoute
+	}
+
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return nil, err
 	}
 
 	date, err := time.Parse(dateLayout, dateString)
@@ -42,11 +48,16 @@ func decodeAddDayRequest(_ context.Context, r *http.Request) (interface{}, error
 	}, nil
 }
 
-//GetDays(ctx context.Context, listID string, opts ...ListDaysOption) ([]Day, error)
+//GetDays(ctx context.Context, listID int, opts ...ListDaysOption) ([]Day, error)
 func decodeGetDaysRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	id, ok := mux.Vars(r)["listId"]
+	idString, ok := mux.Vars(r)["listId"]
 	if !ok {
 		return nil, errBadRoute
+	}
+
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return nil, err
 	}
 
 	return getDaysRequest{
@@ -54,10 +65,10 @@ func decodeGetDaysRequest(_ context.Context, r *http.Request) (interface{}, erro
 	}, nil
 }
 
-//GetDay(ctx context.Context, listID string, date time.Time) (Day, error)
+//GetDay(ctx context.Context, listID int, date time.Time) (Day, error)
 func decodeGetDayRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	vars := mux.Vars(r)
-	id, ok := vars["listId"]
+	idString, ok := vars["listId"]
 	if !ok {
 		return nil, errBadRoute
 	}
@@ -65,6 +76,11 @@ func decodeGetDayRequest(_ context.Context, r *http.Request) (interface{}, error
 	dateString, ok := vars["date"]
 	if !ok {
 		return nil, errBadRoute
+	}
+
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return nil, err
 	}
 
 	date, err := time.Parse(dateLayout, dateString)
@@ -78,11 +94,11 @@ func decodeGetDayRequest(_ context.Context, r *http.Request) (interface{}, error
 	}, nil
 }
 
-//UpdateDay(ctx context.Context, listID string, date time.Time, moments []Moment) (Day, error)
+//UpdateDay(ctx context.Context, listID int, date time.Time, moments []Moment) (Day, error)
 func decodeUpdateDayRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	vars := mux.Vars(r)
 
-	id, ok := vars["listId"]
+	idString, ok := vars["listId"]
 	if !ok {
 		return nil, errBadRoute
 	}
@@ -90,6 +106,11 @@ func decodeUpdateDayRequest(_ context.Context, r *http.Request) (interface{}, er
 	dateString, ok := vars["date"]
 	if !ok {
 		return nil, errBadRoute
+	}
+
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return nil, err
 	}
 
 	date, err := time.Parse(dateLayout, dateString)
@@ -112,10 +133,10 @@ func decodeUpdateDayRequest(_ context.Context, r *http.Request) (interface{}, er
 	}, nil
 }
 
-//DeleteDay(ctx context.Context, listID string, date time.Time) error
+//DeleteDay(ctx context.Context, listID int, date time.Time) error
 func decodeDeleteDayRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	vars := mux.Vars(r)
-	id, ok := vars["listId"]
+	idString, ok := vars["listId"]
 	if !ok {
 		return nil, errBadRoute
 	}
@@ -123,6 +144,11 @@ func decodeDeleteDayRequest(_ context.Context, r *http.Request) (interface{}, er
 	dateString, ok := vars["date"]
 	if !ok {
 		return nil, errBadRoute
+	}
+
+	id, err := strconv.Atoi(idString)
+	if err != nil {
+		return nil, err
 	}
 
 	date, err := time.Parse(dateLayout, dateString)

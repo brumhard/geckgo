@@ -14,7 +14,7 @@ type addListRequest struct {
 }
 
 type addListResponse struct {
-	List List  `json:"list"`
+	List *List `json:"list"`
 	Err  error `json:"err"`
 }
 
@@ -24,6 +24,7 @@ func makeAddListEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(addListRequest)
 		list, err := s.AddList(ctx, req.Name, req.Settings)
+
 		return addListResponse{
 			List: list,
 			Err:  err,
@@ -45,6 +46,7 @@ func makeGetListsEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		_ = request.(getListsRequest)
 		lists, err := s.GetLists(ctx)
+
 		return getListsResponse{
 			List: lists,
 			Err:  err,
@@ -52,13 +54,13 @@ func makeGetListsEndpoint(s Service) endpoint.Endpoint {
 	}
 }
 
-//GetList(ctx context.Context, listID string) (List, error)
+//GetList(ctx context.Context, listID int) (List, error)
 type getListRequest struct {
-	ListID string
+	ListID int
 }
 
 type getListResponse struct {
-	List List  `json:"list"`
+	List *List `json:"list"`
 	Err  error `json:"err"`
 }
 
@@ -68,6 +70,7 @@ func makeGetListEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(getListRequest)
 		list, err := s.GetList(ctx, req.ListID)
+
 		return getListResponse{
 			List: list,
 			Err:  err,
@@ -75,9 +78,9 @@ func makeGetListEndpoint(s Service) endpoint.Endpoint {
 	}
 }
 
-//UpdateList(ctx context.Context, listID string, settings ListSettings) (List, error)
+//UpdateList(ctx context.Context, listID int, settings ListSettings) (List, error)
 type updateListRequest struct {
-	ListID   string
+	ListID   int
 	Settings ListSettings
 }
 
@@ -92,16 +95,17 @@ func makeUpdateListEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(updateListRequest)
 		list, err := s.UpdateList(ctx, req.ListID, req.Settings)
+
 		return updateListResponse{
-			List: list,
+			List: *list,
 			Err:  err,
 		}, nil
 	}
 }
 
-//DeleteList(ctx context.Context, listID string) error
+//DeleteList(ctx context.Context, listID int) error
 type deleteListRequest struct {
-	ListID string
+	ListID int
 }
 
 type deleteListResponse struct {
@@ -114,6 +118,7 @@ func makeDeleteListEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(deleteListRequest)
 		err := s.DeleteList(ctx, req.ListID)
+
 		return deleteListResponse{
 			Err: err,
 		}, nil

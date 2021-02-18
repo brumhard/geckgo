@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -31,16 +32,26 @@ func decodeGetListsRequest(ctx context.Context, t *http.Request) (interface{}, e
 	return getListRequest{}, nil
 }
 
-//GetList(ctx context.Context, listID string) (List, error)
+//GetList(ctx context.Context, listID int) (List, error)
 func decodeGetListRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-	listID := mux.Vars(r)["listId"]
+	listIDString := mux.Vars(r)["listId"]
+
+	listID, err := strconv.Atoi(listIDString)
+	if err != nil {
+		return nil, err
+	}
 
 	return getListRequest{ListID: listID}, nil
 }
 
-//UpdateList(ctx context.Context, listID string, settings ListSettings) (List, error)
+//UpdateList(ctx context.Context, listID int, settings ListSettings) (List, error)
 func decodeUpdateListRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-	listID := mux.Vars(r)["listId"]
+	listIDString := mux.Vars(r)["listId"]
+
+	listID, err := strconv.Atoi(listIDString)
+	if err != nil {
+		return nil, err
+	}
 
 	body := struct {
 		Settings ListSettings `json:"settings,omitempty"`
@@ -56,9 +67,14 @@ func decodeUpdateListRequest(ctx context.Context, r *http.Request) (interface{},
 	}, nil
 }
 
-//DeleteList(ctx context.Context, listID string) error
+//DeleteList(ctx context.Context, listID int) error
 func decodeDeleteListRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-	listID := mux.Vars(r)["listId"]
+	listIDString := mux.Vars(r)["listId"]
+
+	listID, err := strconv.Atoi(listIDString)
+	if err != nil {
+		return nil, err
+	}
 
 	return deleteListRequest{ListID: listID}, nil
 }
