@@ -2,8 +2,10 @@ package pkg
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/jmoiron/sqlx"
 
@@ -234,6 +236,7 @@ func (r *repo) GetDayByDate(ctx context.Context, listID int, date time.Time) (*D
 	}
 
 	var moments []Moment
+
 	for rows.Next() {
 		var moment Moment
 
@@ -247,6 +250,10 @@ func (r *repo) GetDayByDate(ctx context.Context, listID int, date time.Time) (*D
 
 	if err := rows.Err(); err != nil {
 		return nil, err
+	}
+
+	if len(moments) == 0 {
+		return nil, errors.Wrap(ErrNotFound, fmt.Sprintf("No day at date %s", date))
 	}
 
 	return &Day{Date: date, Moments: moments}, nil

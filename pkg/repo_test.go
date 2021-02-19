@@ -247,99 +247,110 @@ var _ = Describe("repo", func() {
 					now time.Time
 					day Day
 				)
-
 				BeforeEach(func() {
 					var err error
 					id, err = repo.AddList(ctx, List{Name: "lul"})
 					Expect(err).ToNot(HaveOccurred())
 
 					now = time.Now()
-					day = Day{Date: now, Moments: []Moment{{Type: MomentTypeEnd, Time: now}}}
-					err = repo.AddDay(ctx, id, day)
-					Expect(err).ToNot(HaveOccurred())
 				})
-				Describe("AddDay -> AddDay", func() {
-					It("fails", func() {
-						err := repo.AddDay(ctx, id, day)
+				Describe("Get non existing day", func() {
+					It("returns not found", func() {
+						_, err := repo.GetDayByDate(ctx, id, now)
 						Expect(err).To(HaveOccurred())
+						Expect(err).To(MatchError(ErrNotFound))
 					})
 				})
-				Describe("AddDay -> GetDayByDate", func() {
-					It("works", func() {
-						got, err := repo.GetDayByDate(ctx, id, now)
+				Context("day available", func() {
+					BeforeEach(func() {
+						day = Day{Date: now, Moments: []Moment{{Type: MomentTypeEnd, Time: now}}}
+						err := repo.AddDay(ctx, id, day)
 						Expect(err).ToNot(HaveOccurred())
-
-						expected := &Day{
-							Date:    now.UTC().Truncate(24 * time.Hour),               // now does not contain any time information
-							Moments: []Moment{{Type: MomentTypeEnd, Time: now.UTC()}}, // everything in UTC
-						}
-						Expect(got).To(Equal(expected))
 					})
-				})
-				Describe("AddDay -> GetDays", func() {
-					It("works", func() {
-						got, err := repo.GetDays(ctx, id)
-						Expect(err).ToNot(HaveOccurred())
-
-						expected := []Day{{
-							Date:    now.UTC().Truncate(24 * time.Hour),               // now does not contain any time information
-							Moments: []Moment{{Type: MomentTypeEnd, Time: now.UTC()}}, // everything in UTC
-						}}
-						Expect(got).To(Equal(expected))
+					Describe("AddDay -> AddDay", func() {
+						It("fails", func() {
+							err := repo.AddDay(ctx, id, day)
+							Expect(err).To(HaveOccurred())
+						})
 					})
-				})
-				Describe("AddDay -> UpdateDay -> GetDayByDate", func() {
-					It("works", func() {
-						addedMoment := Moment{Type: MomentTypeStart, Time: now.UTC()}
-						day.Moments = append(day.Moments, addedMoment)
-						err := repo.UpdateDay(ctx, id, day)
-						Expect(err).ToNot(HaveOccurred())
+					Describe("AddDay -> GetDayByDate", func() {
+						It("works", func() {
+							got, err := repo.GetDayByDate(ctx, id, now)
+							Expect(err).ToNot(HaveOccurred())
 
-						got, err := repo.GetDayByDate(ctx, id, now)
-						Expect(err).ToNot(HaveOccurred())
-
-						expected := &Day{
-							Date:    now.UTC().Truncate(24 * time.Hour),                            // now does not contain any time information
-							Moments: []Moment{{Type: MomentTypeEnd, Time: now.UTC()}, addedMoment}, // everything in UTC
-						}
-						Expect(got).To(Equal(expected))
+							expected := &Day{
+								Date:    now.UTC().Truncate(24 * time.Hour),               // now does not contain any time information
+								Moments: []Moment{{Type: MomentTypeEnd, Time: now.UTC()}}, // everything in UTC
+							}
+							Expect(got).To(Equal(expected))
+						})
 					})
-				})
-				Describe("AddDay -> UpdateDay -> GetDays", func() {
-					It("works", func() {
-						addedMoment := Moment{Type: MomentTypeStart, Time: now.UTC()}
-						day.Moments = append(day.Moments, addedMoment)
+					Describe("AddDay -> GetDays", func() {
+						It("works", func() {
+							got, err := repo.GetDays(ctx, id)
+							Expect(err).ToNot(HaveOccurred())
 
-						err := repo.UpdateDay(ctx, id, day)
-						Expect(err).ToNot(HaveOccurred())
-
-						got, err := repo.GetDays(ctx, id)
-						Expect(err).ToNot(HaveOccurred())
-
-						expected := []Day{{
-							Date:    now.UTC().Truncate(24 * time.Hour),                            // now does not contain any time information
-							Moments: []Moment{{Type: MomentTypeEnd, Time: now.UTC()}, addedMoment}, // everything in UTC
-						}}
-						Expect(got).To(Equal(expected))
+							expected := []Day{{
+								Date:    now.UTC().Truncate(24 * time.Hour),               // now does not contain any time information
+								Moments: []Moment{{Type: MomentTypeEnd, Time: now.UTC()}}, // everything in UTC
+							}}
+							Expect(got).To(Equal(expected))
+						})
 					})
-				})
-				Describe("AddDay -> DeleteDayByDate -> GetDays", func() {
-					It("works", func() {
-						err := repo.DeleteDayByDate(ctx, id, now)
-						Expect(err).ToNot(HaveOccurred())
+					Describe("AddDay -> UpdateDay -> GetDayByDate", func() {
+						It("works", func() {
+							addedMoment := Moment{Type: MomentTypeStart, Time: now.UTC()}
+							day.Moments = append(day.Moments, addedMoment)
+							err := repo.UpdateDay(ctx, id, day)
+							Expect(err).ToNot(HaveOccurred())
 
-						got, err := repo.GetDays(ctx, id)
-						Expect(err).ToNot(HaveOccurred())
+							got, err := repo.GetDayByDate(ctx, id, now)
+							Expect(err).ToNot(HaveOccurred())
 
-						Expect(got).To(BeNil())
+							expected := &Day{
+								Date:    now.UTC().Truncate(24 * time.Hour),                            // now does not contain any time information
+								Moments: []Moment{{Type: MomentTypeEnd, Time: now.UTC()}, addedMoment}, // everything in UTC
+							}
+							Expect(got).To(Equal(expected))
+						})
 					})
-				})
-				Describe("DeleteDayByDate non existing", func() {
-					It("does not return err", func() {
-						Expect(repo.DeleteDayByDate(ctx, id, time.Now().AddDate(0, 0, 1))).To(Succeed())
+					Describe("AddDay -> UpdateDay -> GetDays", func() {
+						It("works", func() {
+							addedMoment := Moment{Type: MomentTypeStart, Time: now.UTC()}
+							day.Moments = append(day.Moments, addedMoment)
+
+							err := repo.UpdateDay(ctx, id, day)
+							Expect(err).ToNot(HaveOccurred())
+
+							got, err := repo.GetDays(ctx, id)
+							Expect(err).ToNot(HaveOccurred())
+
+							expected := []Day{{
+								Date:    now.UTC().Truncate(24 * time.Hour),                            // now does not contain any time information
+								Moments: []Moment{{Type: MomentTypeEnd, Time: now.UTC()}, addedMoment}, // everything in UTC
+							}}
+							Expect(got).To(Equal(expected))
+						})
+					})
+					Describe("AddDay -> DeleteDayByDate -> GetDays", func() {
+						It("works", func() {
+							err := repo.DeleteDayByDate(ctx, id, now)
+							Expect(err).ToNot(HaveOccurred())
+
+							got, err := repo.GetDays(ctx, id)
+							Expect(err).ToNot(HaveOccurred())
+
+							Expect(got).To(BeNil())
+						})
+					})
+					Describe("DeleteDayByDate non existing", func() {
+						It("does not return err", func() {
+							Expect(repo.DeleteDayByDate(ctx, id, time.Now().AddDate(0, 0, 1))).To(Succeed())
+						})
 					})
 				})
 			})
+
 		})
 	})
 })
