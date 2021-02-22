@@ -5,7 +5,15 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/go-kit/kit/log"
+)
+
+var (
+	ErrAlreadyStarted = errors.New("already started")
+	ErrNotStartedYet  = errors.New("not started yet")
+	ErrNotEndedYet    = errors.New("not ended yet")
 )
 
 type Service interface {
@@ -13,8 +21,7 @@ type Service interface {
 	AddList(ctx context.Context, name string, settings ListSettings) (*List, error)
 	GetLists(ctx context.Context) ([]List, error)
 	GetList(ctx context.Context, listID int) (*List, error)
-	// TODO listsettings as optional?
-	UpdateList(ctx context.Context, listID int, settings *ListSettings) (*List, error)
+	UpdateList(ctx context.Context, listID int, name string, settings *ListSettings) (*List, error)
 	DeleteList(ctx context.Context, listID int) error
 
 	// days
@@ -92,13 +99,19 @@ func (s service) GetList(ctx context.Context, listID int) (*List, error) {
 	return s.repo.GetListByID(ctx, listID)
 }
 
-func (s service) UpdateList(ctx context.Context, listID int, settings *ListSettings) (*List, error) {
+func (s service) UpdateList(ctx context.Context, listID int, name string, settings *ListSettings) (*List, error) {
 	toUpdate, err := s.repo.GetListByID(ctx, listID)
 	if err != nil {
 		return nil, err
 	}
 
-	toUpdate.Settings = settings
+	if name != "" {
+		toUpdate.Name = name
+	}
+
+	if toUpdate.Settings != nil {
+		toUpdate.Settings = settings
+	}
 
 	err = s.repo.UpdateList(ctx, *toUpdate)
 	if err != nil {
@@ -155,17 +168,98 @@ func (s service) DeleteDay(ctx context.Context, listID int, date time.Time) erro
 }
 
 func (s service) StartDay(ctx context.Context, listID int, timeStamp time.Time) error {
-	panic("implement me")
+	day, err := s.repo.GetDayByDate(ctx, listID, timeStamp)
+	startMoment := Moment{Type: MomentTypeStart, Time: timeStamp}
+
+	if err != nil {
+		if !errors.Is(err, ErrNotFound) {
+			return err
+		}
+
+		// check for ErrNotFound, if so AddDay with StartDay
+		return s.repo.AddDay(ctx, listID, Day{
+			Date:    timeStamp,
+			Moments: []Moment{startMoment},
+		})
+	}
+
+	// otherwise check if start is already there
+	if startMoments := momentsOfType(day.Moments, MomentTypeStart); len(startMoments) > 0 {
+		return errors.Wrap(ErrAlreadyStarted, "day")
+	}
+
+	day.Moments = append(day.Moments, startMoment)
+
+	return s.repo.UpdateDay(ctx, listID, *day)
 }
 
 func (s service) StartBreak(ctx context.Context, listID int, timeStamp time.Time) error {
-	panic("implement me")
+	day, err := s.repo.GetDayByDate(ctx, listID, timeStamp)
+	if err != nil {
+		return err
+	}
+
+	startBreakMoments := momentsOfType(day.Moments, MomentTypeStartBreak)
+	endBreakMoments := momentsOfType(day.Moments, MomentTypeEndBreak)
+
+	if len(startBreakMoments) > len(endBreakMoments) {
+		return errors.Wrap(ErrAlreadyStarted, "break")
+	}
+
+	day.Moments = append(day.Moments, Moment{Type: MomentTypeStartBreak, Time: timeStamp})
+
+	return s.repo.UpdateDay(ctx, listID, *day)
 }
 
 func (s service) EndBreak(ctx context.Context, listID int, timeStamp time.Time) error {
-	panic("implement me")
+	day, err := s.repo.GetDayByDate(ctx, listID, timeStamp)
+	if err != nil {
+		return err
+	}
+
+	startBreakMoments := momentsOfType(day.Moments, MomentTypeStartBreak)
+	endBreakMoments := momentsOfType(day.Moments, MomentTypeEndBreak)
+
+	if len(startBreakMoments) == len(endBreakMoments) {
+		return errors.Wrap(ErrNotStartedYet, "break")
+	}
+
+	day.Moments = append(day.Moments, Moment{Type: MomentTypeEndBreak, Time: timeStamp})
+
+	return s.repo.UpdateDay(ctx, listID, *day)
 }
 
 func (s service) EndDay(ctx context.Context, listID int, timeStamp time.Time) error {
-	panic("implement me")
+	day, err := s.repo.GetDayByDate(ctx, listID, timeStamp)
+	if err != nil {
+		return err
+	}
+
+	startMoments := momentsOfType(day.Moments, MomentTypeStart)
+	if len(startMoments) == 0 {
+		return errors.Wrap(ErrNotStartedYet, "day")
+	}
+
+	startBreakMoments := momentsOfType(day.Moments, MomentTypeStartBreak)
+	endBreakMoments := momentsOfType(day.Moments, MomentTypeEndBreak)
+
+	if len(startBreakMoments) > len(endBreakMoments) {
+		return errors.Wrap(ErrNotEndedYet, "break")
+	}
+
+	day.Moments = append(day.Moments, Moment{Type: MomentTypeEndBreak, Time: timeStamp})
+
+	return s.repo.UpdateDay(ctx, listID, *day)
+}
+
+func momentsOfType(moments []Moment, momentType MomentType) []Moment {
+	var momentsOfType []Moment
+
+	for _, moment := range moments {
+		if moment.Type == momentType {
+			momentsOfType = append(momentsOfType, moment)
+		}
+	}
+
+	return momentsOfType
 }

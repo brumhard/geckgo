@@ -54,7 +54,8 @@ func decodeUpdateListRequest(ctx context.Context, r *http.Request) (interface{},
 	}
 
 	body := struct {
-		Settings ListSettings `json:"settings,omitempty"`
+		Name     string        `json:"name,omitempty"`
+		Settings *ListSettings `json:"settings,omitempty"`
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -63,6 +64,7 @@ func decodeUpdateListRequest(ctx context.Context, r *http.Request) (interface{},
 
 	return updateListRequest{
 		ListID:   listID,
+		Name:     body.Name,
 		Settings: body.Settings,
 	}, nil
 }

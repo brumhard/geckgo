@@ -81,7 +81,8 @@ func makeGetListEndpoint(s Service) endpoint.Endpoint {
 //UpdateList(ctx context.Context, listID int, settings ListSettings) (List, error)
 type updateListRequest struct {
 	ListID   int
-	Settings ListSettings
+	Name     string
+	Settings *ListSettings
 }
 
 type updateListResponse struct {
@@ -94,7 +95,7 @@ func (r updateListResponse) error() error { return r.Err }
 func makeUpdateListEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(updateListRequest)
-		list, err := s.UpdateList(ctx, req.ListID, req.Settings)
+		list, err := s.UpdateList(ctx, req.ListID, "arr", req.Settings)
 
 		return updateListResponse{
 			List: *list,
