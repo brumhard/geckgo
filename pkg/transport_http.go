@@ -89,7 +89,7 @@ func MakeHandler(s Service, logger kitlog.Logger) http.Handler {
 	)
 
 	r := mux.NewRouter()
-	r.Use(contentTypeMW, cutTrailingSlashMW)
+	r.Use(contentTypeMW)
 
 	// routes
 	v1Router := r.Path("/v1").Subrouter()
@@ -110,7 +110,7 @@ func MakeHandler(s Service, logger kitlog.Logger) http.Handler {
 	v1DayRouter.Handle("/{date}", updateDayHandler).Methods(http.MethodPatch)
 	v1DayRouter.Handle("/{date}", deleteDayHandler).Methods(http.MethodDelete)
 
-	return r
+	return cutTrailingSlashMW(r)
 }
 
 func cutTrailingSlashMW(next http.Handler) http.Handler {

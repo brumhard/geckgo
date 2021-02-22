@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"github.com/pkg/errors"
@@ -43,7 +42,7 @@ type service struct {
 	logger log.Logger
 }
 
-func NewService(repository Repository, logger log.Logger, db *sql.DB) Service {
+func NewService(repository Repository, logger log.Logger) Service {
 	return &service{
 		repo:   repository,
 		logger: logger,
