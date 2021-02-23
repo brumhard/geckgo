@@ -10,6 +10,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const dateLayout = "2006-02-01"
+
 //AddDay(ctx context.Context, listID int, date time.Time, moments []Moment) (Day, error)
 func decodeAddDayRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	vars := mux.Vars(r)

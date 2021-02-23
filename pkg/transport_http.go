@@ -15,8 +15,6 @@ import (
 
 var errBadRoute = errors.New("bad route")
 
-const dateLayout = "2006-02-01"
-
 func MakeHandler(s Service, logger kitlog.Logger) http.Handler {
 	// TODO: add auth MW (https://github.com/go-kit/kit/tree/master/auth/jwt)
 	opts := []kithttp.ServerOption{
@@ -89,7 +87,7 @@ func MakeHandler(s Service, logger kitlog.Logger) http.Handler {
 	)
 
 	r := mux.NewRouter()
-	r.Use(contentTypeMW)
+	r.Use(loggingMW(logger), contentTypeMW)
 
 	// routes
 	v1Router := r.Path("/v1").Subrouter()
