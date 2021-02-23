@@ -17,7 +17,7 @@ type addDayRequest struct {
 
 type addDayResponse struct {
 	Day *Day  `json:"day"`
-	Err error `json:"err"`
+	Err error `json:"err,omitempty"`
 }
 
 func (r addDayResponse) error() error { return r.Err }
@@ -41,7 +41,7 @@ type getDaysRequest struct {
 
 type getDaysResponse struct {
 	Days []Day `json:"days"`
-	Err  error `json:"err"`
+	Err  error `json:"err,omitempty"`
 }
 
 func (r getDaysResponse) error() error { return r.Err }
@@ -67,7 +67,7 @@ type getDayRequest struct {
 
 type getDayResponse struct {
 	Days *Day  `json:"days"`
-	Err  error `json:"err"`
+	Err  error `json:"err,omitempty"`
 }
 
 func (r getDayResponse) error() error { return r.Err }
@@ -93,7 +93,7 @@ type updateDayRequest struct {
 
 type updateDayResponse struct {
 	Days *Day  `json:"days"`
-	Err  error `json:"err"`
+	Err  error `json:"err,omitempty"`
 }
 
 func (r updateDayResponse) error() error { return r.Err }
@@ -119,7 +119,7 @@ type deleteDayRequest struct {
 
 type deleteDayResponse struct {
 	Days Day   `json:"days"`
-	Err  error `json:"err"`
+	Err  error `json:"err,omitempty"`
 }
 
 func (r deleteDayResponse) error() error { return r.Err }

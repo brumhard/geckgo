@@ -15,7 +15,7 @@ type addListRequest struct {
 
 type addListResponse struct {
 	List *List `json:"list"`
-	Err  error `json:"err"`
+	Err  error `json:"err,omitempty"`
 }
 
 func (r addListResponse) error() error { return r.Err }
@@ -37,7 +37,7 @@ type getListsRequest struct{}
 
 type getListsResponse struct {
 	List []List `json:"lists"`
-	Err  error  `json:"err"`
+	Err  error  `json:"err,omitempty"`
 }
 
 func (r getListsResponse) error() error { return r.Err }
@@ -61,7 +61,7 @@ type getListRequest struct {
 
 type getListResponse struct {
 	List *List `json:"list"`
-	Err  error `json:"err"`
+	Err  error `json:"err,omitempty"`
 }
 
 func (r getListResponse) error() error { return r.Err }
@@ -87,7 +87,7 @@ type updateListRequest struct {
 
 type updateListResponse struct {
 	List List  `json:"list"`
-	Err  error `json:"err"`
+	Err  error `json:"err,omitempty"`
 }
 
 func (r updateListResponse) error() error { return r.Err }
@@ -110,7 +110,7 @@ type deleteListRequest struct {
 }
 
 type deleteListResponse struct {
-	Err error `json:"err"`
+	Err error `json:"err,omitempty"`
 }
 
 func (r deleteListResponse) error() error { return r.Err }
