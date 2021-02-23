@@ -13,8 +13,8 @@ import (
 //AddList(ctx context.Context, name string, settings ListSettings) (List, error)
 func decodeAddListRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	body := struct {
-		Name     string       `json:"name,omitempty"`
-		Settings ListSettings `json:"settings,omitempty"`
+		Name     string        `json:"name,omitempty"`
+		Settings *ListSettings `json:"settings,omitempty"`
 	}{}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {

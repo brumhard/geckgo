@@ -17,7 +17,7 @@ var (
 
 type Service interface {
 	// lists
-	AddList(ctx context.Context, name string, settings ListSettings) (*List, error)
+	AddList(ctx context.Context, name string, settings *ListSettings) (*List, error)
 	GetLists(ctx context.Context) ([]List, error)
 	GetList(ctx context.Context, listID int) (*List, error)
 	UpdateList(ctx context.Context, listID int, name string, settings *ListSettings) (*List, error)
@@ -62,7 +62,7 @@ type Moment struct {
 type List struct {
 	ID       int           `json:"id"`
 	Name     string        `json:"name"`
-	Settings *ListSettings `json:"settings"`
+	Settings *ListSettings `json:"settings,omitempty"`
 }
 
 type ListSettings struct {
@@ -74,10 +74,10 @@ type ListDaysOption func(*ListDayOptions)
 type ListDayOptions struct {
 }
 
-func (s service) AddList(ctx context.Context, name string, settings ListSettings) (*List, error) {
+func (s service) AddList(ctx context.Context, name string, settings *ListSettings) (*List, error) {
 	newList := List{
 		Name:     name,
-		Settings: &settings,
+		Settings: settings,
 	}
 
 	id, err := s.repo.AddList(ctx, newList)
