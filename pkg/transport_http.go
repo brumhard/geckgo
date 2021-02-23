@@ -90,10 +90,10 @@ func MakeHandler(s Service, logger kitlog.Logger) http.Handler {
 	r.Use(loggingMW(logger), contentTypeMW)
 
 	// routes
-	v1Router := r.Path("/v1").Subrouter()
+	v1Router := r.PathPrefix("/v1").Subrouter()
 
 	// list
-	v1ListRouter := v1Router.Path("/lists").Subrouter()
+	v1ListRouter := v1Router.PathPrefix("/lists").Subrouter()
 	v1ListRouter.Handle("", addListHandler).Methods(http.MethodPost)
 	v1ListRouter.Handle("", getListsHandler).Methods(http.MethodGet)
 	v1ListRouter.Handle("/{listId}", getListHandler).Methods(http.MethodGet)
@@ -101,7 +101,7 @@ func MakeHandler(s Service, logger kitlog.Logger) http.Handler {
 	v1ListRouter.Handle("/{listId}", deleteListHandler).Methods(http.MethodDelete)
 
 	// day
-	v1DayRouter := v1Router.Path("/lists/{listId}/days").Subrouter()
+	v1DayRouter := v1Router.PathPrefix("/lists/{listId}/days").Subrouter()
 	v1DayRouter.Handle("/{date}", addDayHandler).Methods(http.MethodPut)
 	v1DayRouter.Handle("", getDaysHandler).Methods(http.MethodGet)
 	v1DayRouter.Handle("/{date}", getDayHandler).Methods(http.MethodGet)
