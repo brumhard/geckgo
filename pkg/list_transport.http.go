@@ -29,7 +29,7 @@ func decodeAddListRequest(ctx context.Context, r *http.Request) (interface{}, er
 
 //GetLists(ctx context.Context) ([]List, error)
 func decodeGetListsRequest(ctx context.Context, t *http.Request) (interface{}, error) {
-	return getListRequest{}, nil
+	return getListsRequest{}, nil
 }
 
 //GetList(ctx context.Context, listID int) (List, error)
