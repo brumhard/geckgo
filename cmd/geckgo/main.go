@@ -8,6 +8,9 @@ import (
 	"os"
 	"strconv"
 
+	db2 "github.com/brumhard/geckgo/db"
+	"github.com/golang-migrate/migrate/v4/source/httpfs"
+
 	"github.com/brumhard/alligotor"
 
 	"github.com/brumhard/geckgo/pkg"
@@ -78,10 +81,14 @@ func run() error {
 		return err
 	}
 
-	migrations, err := migrate.NewWithDatabaseInstance(
-		// TODO: use embed here: https://github.com/golang-migrate/migrate/issues/471
-		"file://db/migrations",
-		cfg.DB.DBName, driver)
+	source, err := httpfs.New(http.FS(db2.Migrations), "migrations")
+	if err != nil {
+		return err
+	}
+
+	defer source.Close()
+
+	migrations, err := migrate.NewWithInstance("httpfs", source, cfg.DB.DBName, driver)
 	if err != nil {
 		return err
 	}
