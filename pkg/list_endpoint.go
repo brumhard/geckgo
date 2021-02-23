@@ -10,12 +10,12 @@ import (
 //AddList(ctx context.Context, name string, settings ListSettings) (List, error)
 type addListRequest struct {
 	Name     string
-	Settings ListSettings
+	Settings *ListSettings
 }
 
 type addListResponse struct {
 	List *List `json:"list"`
-	Err  error `json:"err,omitempty"`
+	Err  error `json:"-"`
 }
 
 func (r addListResponse) error() error { return r.Err }
@@ -37,7 +37,7 @@ type getListsRequest struct{}
 
 type getListsResponse struct {
 	List []List `json:"lists"`
-	Err  error  `json:"err,omitempty"`
+	Err  error  `json:"-"`
 }
 
 func (r getListsResponse) error() error { return r.Err }
@@ -61,7 +61,7 @@ type getListRequest struct {
 
 type getListResponse struct {
 	List *List `json:"list"`
-	Err  error `json:"err,omitempty"`
+	Err  error `json:"-"`
 }
 
 func (r getListResponse) error() error { return r.Err }
@@ -87,7 +87,7 @@ type updateListRequest struct {
 
 type updateListResponse struct {
 	List List  `json:"list"`
-	Err  error `json:"err,omitempty"`
+	Err  error `json:"-"`
 }
 
 func (r updateListResponse) error() error { return r.Err }
@@ -110,7 +110,7 @@ type deleteListRequest struct {
 }
 
 type deleteListResponse struct {
-	Err error `json:"err,omitempty"`
+	Err error `json:"-"`
 }
 
 func (r deleteListResponse) error() error { return r.Err }
