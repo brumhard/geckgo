@@ -120,7 +120,8 @@ func cutTrailingSlashMW(next http.Handler) http.Handler {
 
 func contentTypeMW(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Content-Type") != "application/json" {
+		contentTypeHeader := r.Header.Get("Content-Type")
+		if contentTypeHeader != "" && contentTypeHeader != "application/json" {
 			http.Error(w, "unsupported content-type", http.StatusBadRequest)
 			return
 		}
