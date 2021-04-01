@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-playground/validator/v10"
+
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/transport"
 	kithttp "github.com/go-kit/kit/transport/http"
@@ -22,33 +24,36 @@ func MakeHandler(s Service, logger kitlog.Logger) http.Handler {
 		kithttp.ServerErrorEncoder(encodeError),
 	}
 
+	v := validator.New()
+	valMW := validationMW(v)
+
 	// list
 	addListHandler := kithttp.NewServer(
-		makeAddListEndpoint(s),
+		valMW(makeAddListEndpoint(s)),
 		decodeAddListRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	getListsHandler := kithttp.NewServer(
-		makeGetListsEndpoint(s),
+		valMW(makeGetListsEndpoint(s)),
 		decodeGetListsRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	getListHandler := kithttp.NewServer(
-		makeGetListEndpoint(s),
+		valMW(makeGetListEndpoint(s)),
 		decodeGetListRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	updateListHandler := kithttp.NewServer(
-		makeUpdateListEndpoint(s),
+		valMW(makeUpdateListEndpoint(s)),
 		decodeUpdateListRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	deleteListHandler := kithttp.NewServer(
-		makeDeleteListEndpoint(s),
+		valMW(makeDeleteListEndpoint(s)),
 		decodeDeleteListRequest,
 		encodeJSONResponse,
 		opts...,
@@ -56,31 +61,31 @@ func MakeHandler(s Service, logger kitlog.Logger) http.Handler {
 
 	// day
 	addDayHandler := kithttp.NewServer(
-		makeAddDayEndpoint(s),
+		valMW(makeAddDayEndpoint(s)),
 		decodeAddDayRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	getDaysHandler := kithttp.NewServer(
-		makeGetDaysEndpoint(s),
+		valMW(makeGetDaysEndpoint(s)),
 		decodeGetDaysRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	getDayHandler := kithttp.NewServer(
-		makeGetDayEndpoint(s),
+		valMW(makeGetDayEndpoint(s)),
 		decodeGetDayRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	updateDayHandler := kithttp.NewServer(
-		makeUpdateDayEndpoint(s),
+		valMW(makeUpdateDayEndpoint(s)),
 		decodeUpdateDayRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	deleteDayHandler := kithttp.NewServer(
-		makeDeleteDayEndpoint(s),
+		valMW(makeDeleteDayEndpoint(s)),
 		decodeDeleteDayRequest,
 		encodeJSONResponse,
 		opts...,

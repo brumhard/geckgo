@@ -9,7 +9,7 @@ import (
 // lists
 //AddList(ctx context.Context, name string, settings ListSettings) (List, error)
 type addListRequest struct {
-	Name     string
+	Name     string `validate:"required"`
 	Settings *ListSettings
 }
 
@@ -56,7 +56,7 @@ func makeGetListsEndpoint(s Service) endpoint.Endpoint {
 
 //GetList(ctx context.Context, listID int) (List, error)
 type getListRequest struct {
-	ListID int
+	ListID int `validate:"gte=0"`
 }
 
 type getListResponse struct {
@@ -80,7 +80,7 @@ func makeGetListEndpoint(s Service) endpoint.Endpoint {
 
 //UpdateList(ctx context.Context, listID int, settings ListSettings) (List, error)
 type updateListRequest struct {
-	ListID   int
+	ListID   int `validate:"gte=0"`
 	Name     string
 	Settings *ListSettings
 }
@@ -106,7 +106,7 @@ func makeUpdateListEndpoint(s Service) endpoint.Endpoint {
 
 //DeleteList(ctx context.Context, listID int) error
 type deleteListRequest struct {
-	ListID int
+	ListID int `validate:"gte=0"`
 }
 
 type deleteListResponse struct {

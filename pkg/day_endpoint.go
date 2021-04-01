@@ -9,7 +9,7 @@ import (
 
 //AddDay(ctx context.Context, listID int, date time.Time, moments []Moment) (Day, error)
 type addDayRequest struct {
-	ListID  int
+	ListID  int `validate:"gte=0"`
 	Date    time.Time
 	Moments []Moment
 }
@@ -35,7 +35,7 @@ func makeAddDayEndpoint(s Service) endpoint.Endpoint {
 
 //GetDays(ctx context.Context, listID int, opts ...ListDaysOption) ([]Day, error)
 type getDaysRequest struct {
-	ListID int
+	ListID int `validate:"gte=0"`
 }
 
 type getDaysResponse struct {
@@ -60,7 +60,7 @@ func makeGetDaysEndpoint(s Service) endpoint.Endpoint {
 
 //GetDay(ctx context.Context, listID int, date time.Time) (Day, error)
 type getDayRequest struct {
-	ListID int
+	ListID int `validate:"gte=0"`
 	Date   time.Time
 }
 
@@ -85,7 +85,7 @@ func makeGetDayEndpoint(s Service) endpoint.Endpoint {
 
 //UpdateDay(ctx context.Context, listID int, date time.Time, moments []Moment) (Day, error)
 type updateDayRequest struct {
-	ListID  int
+	ListID  int `validate:"gte=0"`
 	Date    time.Time
 	Moments []Moment
 }
@@ -111,9 +111,8 @@ func makeUpdateDayEndpoint(s Service) endpoint.Endpoint {
 
 //DeleteDay(ctx context.Context, listID int, date time.Time) error
 type deleteDayRequest struct {
-	ListID  int
-	Date    time.Time
-	Moments []Moment
+	ListID int `validate:"gte=0"`
+	Date   time.Time
 }
 
 type deleteDayResponse struct {
