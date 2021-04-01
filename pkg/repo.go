@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -116,6 +117,9 @@ func (r *repo) GetListByID(ctx context.Context, listID int) (*List, error) {
 		listID,
 	).Scan(&list.ID, &list.Name, &listSettings.DailyTime)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.Wrap(ErrNotFound, fmt.Sprintf("list with id %d", listID))
+		}
 		return nil, err
 	}
 
@@ -138,7 +142,7 @@ func (r *repo) UpdateList(ctx context.Context, list List) error {
 
 	// if nothing has been updated
 	if !rows.Next() {
-		return ErrNotFound
+		return errors.Wrap(ErrNotFound, fmt.Sprintf("list with id %d", list.ID))
 	}
 
 	if list.Settings != nil {
