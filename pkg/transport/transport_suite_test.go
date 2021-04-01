@@ -1,4 +1,4 @@
-package pkg_test
+package transport
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestPkg(t *testing.T) {
+func TestTransport(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Pkg Suite")
+	RunSpecs(t, "Transport Suite")
 }

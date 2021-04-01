@@ -1,8 +1,10 @@
-package pkg
+package transport
 
 import (
 	"context"
 	"encoding/json"
+	"github.com/brumhard/geckgo/pkg/endpoint"
+	"github.com/brumhard/geckgo/pkg/service"
 	"net/http"
 	"strconv"
 	"time"
@@ -40,7 +42,7 @@ func decodeAddDayRequest(_ context.Context, r *http.Request) (interface{}, error
 	}
 
 	var body struct {
-		Moments []Moment `json:"moments"`
+		Moments []service.Moment `json:"moments"`
 	}
 
 	if r.Body == http.NoBody {
@@ -51,7 +53,7 @@ func decodeAddDayRequest(_ context.Context, r *http.Request) (interface{}, error
 		return nil, err
 	}
 
-	return addDayRequest{
+	return endpoint.AddDayRequest{
 		ListID:  id,
 		Date:    date,
 		Moments: body.Moments,
@@ -70,7 +72,7 @@ func decodeGetDaysRequest(_ context.Context, r *http.Request) (interface{}, erro
 		return nil, err
 	}
 
-	return getDaysRequest{
+	return endpoint.GetDaysRequest{
 		ListID: id,
 	}, nil
 }
@@ -98,7 +100,7 @@ func decodeGetDayRequest(_ context.Context, r *http.Request) (interface{}, error
 		return nil, err
 	}
 
-	return getDayRequest{
+	return endpoint.GetDayRequest{
 		ListID: id,
 		Date:   date,
 	}, nil
@@ -129,7 +131,7 @@ func decodeUpdateDayRequest(_ context.Context, r *http.Request) (interface{}, er
 	}
 
 	var body struct {
-		Moments []Moment `json:"moments"`
+		Moments []service.Moment `json:"moments"`
 	}
 
 	if r.Body == http.NoBody {
@@ -140,7 +142,7 @@ func decodeUpdateDayRequest(_ context.Context, r *http.Request) (interface{}, er
 		return nil, err
 	}
 
-	return updateDayRequest{
+	return endpoint.UpdateDayRequest{
 		ListID:  id,
 		Date:    date,
 		Moments: body.Moments,
@@ -170,7 +172,7 @@ func decodeDeleteDayRequest(_ context.Context, r *http.Request) (interface{}, er
 		return nil, err
 	}
 
-	return deleteDayRequest{
+	return endpoint.DeleteDayRequest{
 		ListID: id,
 		Date:   date,
 	}, nil

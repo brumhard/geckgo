@@ -8,12 +8,15 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/brumhard/geckgo/pkg/endpoint"
+	"github.com/brumhard/geckgo/pkg/service"
+	"github.com/brumhard/geckgo/pkg/transport"
+
 	"github.com/brumhard/alligotor"
 
-	db2 "github.com/brumhard/geckgo/db"
+	"github.com/brumhard/geckgo/db"
 	"github.com/golang-migrate/migrate/v4/source/httpfs"
 
-	"github.com/brumhard/geckgo/pkg"
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -71,17 +74,17 @@ func run() error {
 		strconv.Itoa(cfg.DB.Port), cfg.DB.User, cfg.DB.Password, cfg.DB.DBName,
 	)
 
-	db, err := sqlx.Connect("pgx", connectString)
+	dbConnection, err := sqlx.Connect("pgx", connectString)
 	if err != nil {
 		return err
 	}
 
-	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
+	driver, err := postgres.WithInstance(dbConnection.DB, &postgres.Config{})
 	if err != nil {
 		return err
 	}
 
-	source, err := httpfs.New(http.FS(db2.Migrations), "migrations")
+	source, err := httpfs.New(http.FS(db.Migrations), "migrations")
 	if err != nil {
 		return err
 	}
@@ -99,8 +102,9 @@ func run() error {
 		}
 	}
 
-	repo := pkg.NewRepository(db, logger)
-	service := pkg.NewService(repo, logger)
+	repo := service.NewRepository(dbConnection, logger)
+	s := service.NewService(repo, logger)
+	endpoints := endpoint.New(s)
 
-	return http.ListenAndServe(":"+strconv.Itoa(cfg.API.Port), pkg.MakeHandler(service, logger))
+	return http.ListenAndServe(":"+strconv.Itoa(cfg.API.Port), transport.NewHTTPHandler(endpoints, logger))
 }

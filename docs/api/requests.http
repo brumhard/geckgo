@@ -1,0 +1,20 @@
+### GET lists
+GET http://localhost:8080/v1/lists
+Accept: application/json
+
+### GET days of first list
+GET http://localhost:8080/v1/lists/1/days
+Accept: application/json
+
+### PUT a new day
+PUT {{host}}/v1/lists/1/days/2020-01-10
+Content-Type: application/json
+
+{
+  "moments": [
+    {
+      "type": "end",
+      "time": "2020-01-10T12:01:04Z"
+    }
+  ]
+}

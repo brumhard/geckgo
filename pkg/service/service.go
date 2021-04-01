@@ -1,7 +1,8 @@
-package pkg
+package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -13,6 +14,7 @@ var (
 	ErrAlreadyStarted = errors.New("already started")
 	ErrNotStartedYet  = errors.New("not started yet")
 	ErrNotEndedYet    = errors.New("not ended yet")
+	ErrConflict       = errors.New("conflict")
 )
 
 type Service interface {
@@ -130,8 +132,17 @@ func (s service) AddDay(ctx context.Context, listID int, date time.Time, moments
 		Moments: moments,
 	}
 
-	err := s.repo.AddDay(ctx, listID, newDay)
-	if err != nil {
+	_, err := s.GetDay(ctx, listID, date)
+	// ErrNotFound is expected
+	if !errors.Is(err, ErrNotFound) {
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, errors.Wrap(ErrConflict, fmt.Sprintf("day at %s", date))
+	}
+
+	if err := s.repo.AddDay(ctx, listID, newDay); err != nil {
 		return nil, err
 	}
 

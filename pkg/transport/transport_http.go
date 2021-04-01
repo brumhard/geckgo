@@ -1,4 +1,4 @@
-package pkg
+package transport
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-playground/validator/v10"
+	"github.com/brumhard/geckgo/pkg/endpoint"
 
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/transport"
@@ -17,43 +17,40 @@ import (
 
 var errBadRoute = errors.New("bad route")
 
-func MakeHandler(s Service, logger kitlog.Logger) http.Handler {
+func NewHTTPHandler(endpoints endpoint.Set, logger kitlog.Logger) http.Handler {
 	// TODO: add auth MW (https://github.com/go-kit/kit/tree/master/auth/jwt)
 	opts := []kithttp.ServerOption{
 		kithttp.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
 		kithttp.ServerErrorEncoder(encodeError),
 	}
 
-	v := validator.New()
-	valMW := validationMW(v)
-
 	// list
 	addListHandler := kithttp.NewServer(
-		valMW(makeAddListEndpoint(s)),
+		endpoints.AddList,
 		decodeAddListRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	getListsHandler := kithttp.NewServer(
-		valMW(makeGetListsEndpoint(s)),
+		endpoints.GetLists,
 		decodeGetListsRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	getListHandler := kithttp.NewServer(
-		valMW(makeGetListEndpoint(s)),
+		endpoints.GetList,
 		decodeGetListRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	updateListHandler := kithttp.NewServer(
-		valMW(makeUpdateListEndpoint(s)),
+		endpoints.UpdateList,
 		decodeUpdateListRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	deleteListHandler := kithttp.NewServer(
-		valMW(makeDeleteListEndpoint(s)),
+		endpoints.DeleteList,
 		decodeDeleteListRequest,
 		encodeJSONResponse,
 		opts...,
@@ -61,31 +58,31 @@ func MakeHandler(s Service, logger kitlog.Logger) http.Handler {
 
 	// day
 	addDayHandler := kithttp.NewServer(
-		valMW(makeAddDayEndpoint(s)),
+		endpoints.AddDay,
 		decodeAddDayRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	getDaysHandler := kithttp.NewServer(
-		valMW(makeGetDaysEndpoint(s)),
+		endpoints.GetDays,
 		decodeGetDaysRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	getDayHandler := kithttp.NewServer(
-		valMW(makeGetDayEndpoint(s)),
+		endpoints.GetDay,
 		decodeGetDayRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	updateDayHandler := kithttp.NewServer(
-		valMW(makeUpdateDayEndpoint(s)),
+		endpoints.UpdateDay,
 		decodeUpdateDayRequest,
 		encodeJSONResponse,
 		opts...,
 	)
 	deleteDayHandler := kithttp.NewServer(
-		valMW(makeDeleteDayEndpoint(s)),
+		endpoints.DeleteDay,
 		decodeDeleteDayRequest,
 		encodeJSONResponse,
 		opts...,

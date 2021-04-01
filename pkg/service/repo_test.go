@@ -1,4 +1,4 @@
-package pkg
+package service
 
 import (
 	"context"
@@ -92,7 +92,7 @@ var _ = Describe("repo", func() {
 		driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 		Expect(err).ToNot(HaveOccurred())
 		migrations, err = migrate.NewWithDatabaseInstance(
-			"file://../db/migrations",
+			"file://../../db/migrations",
 			database, driver)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(migrations.Up()).To(Succeed())
