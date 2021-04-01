@@ -7,10 +7,14 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/gorilla/mux"
 )
 
 const dateLayout = "2006-02-01"
+
+var ErrNoBody = errors.New("no body")
 
 //AddDay(ctx context.Context, listID int, date time.Time, moments []Moment) (Day, error)
 func decodeAddDayRequest(_ context.Context, r *http.Request) (interface{}, error) {
@@ -37,6 +41,10 @@ func decodeAddDayRequest(_ context.Context, r *http.Request) (interface{}, error
 
 	var body struct {
 		Moments []Moment `json:"moments"`
+	}
+
+	if r.Body == http.NoBody {
+		return nil, ErrNoBody
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -122,6 +130,10 @@ func decodeUpdateDayRequest(_ context.Context, r *http.Request) (interface{}, er
 
 	var body struct {
 		Moments []Moment `json:"moments"`
+	}
+
+	if r.Body == http.NoBody {
+		return nil, ErrNoBody
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {

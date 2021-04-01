@@ -7,7 +7,6 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
-// TODO: check list id for day methods
 //AddDay(ctx context.Context, listID int, date time.Time, moments []Moment) (Day, error)
 type addDayRequest struct {
 	ListID  int

@@ -17,6 +17,10 @@ func decodeAddListRequest(ctx context.Context, r *http.Request) (interface{}, er
 		Settings *ListSettings `json:"settings,omitempty"`
 	}{}
 
+	if r.Body == http.NoBody {
+		return nil, ErrNoBody
+	}
+
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		return nil, err
 	}
@@ -57,6 +61,10 @@ func decodeUpdateListRequest(ctx context.Context, r *http.Request) (interface{},
 		Name     string        `json:"name,omitempty"`
 		Settings *ListSettings `json:"settings,omitempty"`
 	}{}
+
+	if r.Body == http.NoBody {
+		return nil, ErrNoBody
+	}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		return nil, err

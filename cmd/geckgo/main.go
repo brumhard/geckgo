@@ -8,10 +8,10 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/brumhard/alligotor"
+
 	db2 "github.com/brumhard/geckgo/db"
 	"github.com/golang-migrate/migrate/v4/source/httpfs"
-
-	"github.com/brumhard/alligotor"
 
 	"github.com/brumhard/geckgo/pkg"
 	kitlog "github.com/go-kit/kit/log"
@@ -59,7 +59,7 @@ func run() error {
 		},
 	}
 
-	cfgLoader := alligotor.New(alligotor.FromEnvVars("GECKGO"))
+	cfgLoader := alligotor.New(alligotor.NewEnvSource("GECKGO"))
 	if err := cfgLoader.Get(&cfg); err != nil {
 		return err
 	}
