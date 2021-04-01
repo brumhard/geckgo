@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"database/sql/driver"
+	"encoding/json"
 
 	"github.com/pkg/errors"
 )
@@ -61,9 +62,18 @@ func (t MomentType) Value() (driver.Value, error) {
 
 func (t MomentType) MarshalJSON() ([]byte, error) {
 	str, err := t.StrErr()
-	return []byte(str), err
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(str)
 }
 
 func (t *MomentType) UnmarshalJSON(bytes []byte) error {
-	return t.ReadStr(string(bytes))
+	var str string
+	if err := json.Unmarshal(bytes, &str); err != nil {
+		return err
+	}
+
+	return t.ReadStr(str)
 }
