@@ -143,6 +143,10 @@ func (s service) GetDays(ctx context.Context, listID int, opts ...ListDaysOption
 }
 
 func (s service) GetDay(ctx context.Context, listID int, date time.Time) (*Day, error) {
+	if _, err := s.repo.GetListByID(ctx, listID); err != nil {
+		return nil, err
+	}
+
 	return s.repo.GetDayByDate(ctx, listID, date)
 }
 
