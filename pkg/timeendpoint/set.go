@@ -1,7 +1,7 @@
-package endpoint
+package timeendpoint
 
 import (
-	"github.com/brumhard/geckgo/pkg/service"
+	"github.com/brumhard/geckgo/pkg/timeservice"
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-playground/validator/v10"
 )
@@ -24,7 +24,7 @@ type Set struct {
 
 // New returns a Set that wraps the provided server, and wires in all of the
 // expected endpoint middlewares via the various parameters.
-func New(svc service.Service) Set {
+func New(svc timeservice.Service) Set {
 	valMW := validationMW(validator.New())
 
 	return Set{

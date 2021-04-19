@@ -1,4 +1,4 @@
-package service
+package timeservice
 
 import (
 	"context"
@@ -146,7 +146,7 @@ func (s service) AddDay(ctx context.Context, listID int, date time.Time, moments
 		return nil, err
 	}
 
-	return &newDay, err
+	return &newDay, nil
 }
 
 func (s service) GetDays(ctx context.Context, listID int, opts ...ListDaysOption) ([]Day, error) {

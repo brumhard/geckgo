@@ -1,4 +1,4 @@
-package service
+package timeservice
 
 import (
 	"database/sql/driver"

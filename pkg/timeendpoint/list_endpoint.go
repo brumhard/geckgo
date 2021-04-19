@@ -1,9 +1,9 @@
-package endpoint
+package timeendpoint
 
 import (
 	"context"
-	"github.com/brumhard/geckgo/pkg/service"
 
+	"github.com/brumhard/geckgo/pkg/timeservice"
 	"github.com/go-kit/kit/endpoint"
 )
 
@@ -11,17 +11,17 @@ import (
 //AddList(ctx context.Context, name string, settings ListSettings) (List, error)
 type AddListRequest struct {
 	Name     string `validate:"required"`
-	Settings *service.ListSettings
+	Settings *timeservice.ListSettings
 }
 
 type AddListResponse struct {
-	List *service.List `json:"list"`
-	Err  error         `json:"-"`
+	List *timeservice.List `json:"list"`
+	Err  error             `json:"-"`
 }
 
-func (r AddListResponse) error() error { return r.Err }
+func (r AddListResponse) Failed() error { return r.Err }
 
-func makeAddListEndpoint(s service.Service) endpoint.Endpoint {
+func makeAddListEndpoint(s timeservice.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(AddListRequest)
 		list, err := s.AddList(ctx, req.Name, req.Settings)
@@ -37,13 +37,13 @@ func makeAddListEndpoint(s service.Service) endpoint.Endpoint {
 type GetListsRequest struct{}
 
 type GetListsResponse struct {
-	List []service.List `json:"lists"`
-	Err  error          `json:"-"`
+	List []timeservice.List `json:"lists"`
+	Err  error              `json:"-"`
 }
 
-func (r GetListsResponse) error() error { return r.Err }
+func (r GetListsResponse) Failed() error { return r.Err }
 
-func makeGetListsEndpoint(s service.Service) endpoint.Endpoint {
+func makeGetListsEndpoint(s timeservice.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		_ = request.(GetListsRequest)
 		lists, err := s.GetLists(ctx)
@@ -61,13 +61,13 @@ type GetListRequest struct {
 }
 
 type GetListResponse struct {
-	List *service.List `json:"list"`
-	Err  error         `json:"-"`
+	List *timeservice.List `json:"list"`
+	Err  error             `json:"-"`
 }
 
-func (r GetListResponse) error() error { return r.Err }
+func (r GetListResponse) Failed() error { return r.Err }
 
-func makeGetListEndpoint(s service.Service) endpoint.Endpoint {
+func makeGetListEndpoint(s timeservice.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GetListRequest)
 		list, err := s.GetList(ctx, req.ListID)
@@ -83,25 +83,27 @@ func makeGetListEndpoint(s service.Service) endpoint.Endpoint {
 type UpdateListRequest struct {
 	ListID   int `validate:"gte=0"`
 	Name     string
-	Settings *service.ListSettings
+	Settings *timeservice.ListSettings
 }
 
 type UpdateListResponse struct {
-	List service.List `json:"list"`
-	Err  error        `json:"-"`
+	List *timeservice.List `json:"list"`
+	Err  error             `json:"-"`
 }
 
-func (r UpdateListResponse) error() error { return r.Err }
+func (r UpdateListResponse) Failed() error { return r.Err }
 
-func makeUpdateListEndpoint(s service.Service) endpoint.Endpoint {
+func makeUpdateListEndpoint(s timeservice.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateListRequest)
-		list, err := s.UpdateList(ctx, req.ListID, "arr", req.Settings)
+		list, err := s.UpdateList(ctx, req.ListID, req.Name, req.Settings)
 
-		return UpdateListResponse{
-			List: *list,
+		resp := UpdateListResponse{
+			List: list,
 			Err:  err,
-		}, nil
+		}
+
+		return resp, nil
 	}
 }
 
@@ -114,9 +116,9 @@ type DeleteListResponse struct {
 	Err error `json:"-"`
 }
 
-func (r DeleteListResponse) error() error { return r.Err }
+func (r DeleteListResponse) Failed() error { return r.Err }
 
-func makeDeleteListEndpoint(s service.Service) endpoint.Endpoint {
+func makeDeleteListEndpoint(s timeservice.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeleteListRequest)
 		err := s.DeleteList(ctx, req.ListID)

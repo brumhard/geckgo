@@ -1,4 +1,4 @@
-package endpoint
+package timetransport
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestEndpoint(t *testing.T) {
+func TestTransport(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Endpoint Suite")
+	RunSpecs(t, "Transport Suite")
 }

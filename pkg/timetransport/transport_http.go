@@ -1,4 +1,4 @@
-package transport
+package timetransport
 
 import (
 	"context"
@@ -7,7 +7,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/brumhard/geckgo/pkg/endpoint"
+	"github.com/brumhard/geckgo/pkg/timeservice"
+
+	"github.com/go-kit/kit/endpoint"
+
+	"github.com/brumhard/geckgo/pkg/timeendpoint"
 
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/transport"
@@ -17,7 +21,7 @@ import (
 
 var errBadRoute = errors.New("bad route")
 
-func NewHTTPHandler(endpoints endpoint.Set, logger kitlog.Logger) http.Handler {
+func NewHTTPHandler(endpoints timeendpoint.Set, logger kitlog.Logger) http.Handler {
 	// TODO: add auth MW (https://github.com/go-kit/kit/tree/master/auth/jwt)
 	opts := []kithttp.ServerOption{
 		kithttp.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
@@ -133,8 +137,8 @@ func contentTypeMW(next http.Handler) http.Handler {
 }
 
 func encodeJSONResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
-	if e, ok := response.(interface{ error() error }); ok && e.error() != nil {
-		encodeError(ctx, e.error(), w)
+	if e, ok := response.(endpoint.Failer); ok && e.Failed() != nil {
+		encodeError(ctx, e.Failed(), w)
 		return nil
 	}
 
@@ -143,12 +147,32 @@ func encodeJSONResponse(ctx context.Context, w http.ResponseWriter, response int
 	return json.NewEncoder(w).Encode(response)
 }
 
+func err2code(err error) int {
+	var valErr *timeendpoint.ValidationErr
+
+	isErr := func(target error) bool {
+		return errors.Is(err, target)
+	}
+
+	switch {
+	case isErr(timeservice.ErrNotFound):
+		return http.StatusNotFound
+	case isErr(timeservice.ErrConflict):
+		return http.StatusConflict
+	case isErr(timeservice.ErrInvalidMomentType), isErr(timeservice.ErrInvalidDuration),
+		isErr(timeservice.ErrAlreadyStarted), isErr(timeservice.ErrNotStartedYet), isErr(timeservice.ErrNotEndedYet),
+		errors.As(err, &valErr):
+		return http.StatusBadRequest
+	}
+
+	return http.StatusInternalServerError
+}
+
 // encodeError is not only called for errors in an endpoint's but also for errors during decoding.
 // That's why headers need to be set here as well as in the encodeJSONResponse function.
 func encodeError(_ context.Context, err error, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	// TODO analyze error types from business-logic
-	w.WriteHeader(http.StatusInternalServerError)
+	w.WriteHeader(err2code(err))
 
 	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"error": err.Error(),

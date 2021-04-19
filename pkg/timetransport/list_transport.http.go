@@ -1,4 +1,4 @@
-package transport
+package timetransport
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/brumhard/geckgo/pkg/endpoint"
-	"github.com/brumhard/geckgo/pkg/service"
+	"github.com/brumhard/geckgo/pkg/timeendpoint"
+	"github.com/brumhard/geckgo/pkg/timeservice"
 
 	"github.com/gorilla/mux"
 )
@@ -16,8 +16,8 @@ import (
 //AddList(ctx context.Context, name string, settings ListSettings) (List, error)
 func decodeAddListRequest(ctx context.Context, r *http.Request) (interface{}, error) {
 	body := struct {
-		Name     string                `json:"name,omitempty"`
-		Settings *service.ListSettings `json:"settings,omitempty"`
+		Name     string                    `json:"name,omitempty"`
+		Settings *timeservice.ListSettings `json:"settings,omitempty"`
 	}{}
 
 	if r.Body == http.NoBody {
@@ -28,7 +28,7 @@ func decodeAddListRequest(ctx context.Context, r *http.Request) (interface{}, er
 		return nil, err
 	}
 
-	return endpoint.AddListRequest{
+	return timeendpoint.AddListRequest{
 		Name:     body.Name,
 		Settings: body.Settings,
 	}, nil
@@ -36,7 +36,7 @@ func decodeAddListRequest(ctx context.Context, r *http.Request) (interface{}, er
 
 //GetLists(ctx context.Context) ([]List, error)
 func decodeGetListsRequest(ctx context.Context, t *http.Request) (interface{}, error) {
-	return endpoint.GetListsRequest{}, nil
+	return timeendpoint.GetListsRequest{}, nil
 }
 
 //GetList(ctx context.Context, listID int) (List, error)
@@ -48,7 +48,7 @@ func decodeGetListRequest(ctx context.Context, r *http.Request) (interface{}, er
 		return nil, err
 	}
 
-	return endpoint.GetListRequest{ListID: listID}, nil
+	return timeendpoint.GetListRequest{ListID: listID}, nil
 }
 
 //UpdateList(ctx context.Context, listID int, settings ListSettings) (List, error)
@@ -61,8 +61,8 @@ func decodeUpdateListRequest(ctx context.Context, r *http.Request) (interface{},
 	}
 
 	body := struct {
-		Name     string                `json:"name,omitempty"`
-		Settings *service.ListSettings `json:"settings,omitempty"`
+		Name     string                    `json:"name,omitempty"`
+		Settings *timeservice.ListSettings `json:"settings,omitempty"`
 	}{}
 
 	if r.Body == http.NoBody {
@@ -73,7 +73,7 @@ func decodeUpdateListRequest(ctx context.Context, r *http.Request) (interface{},
 		return nil, err
 	}
 
-	return endpoint.UpdateListRequest{
+	return timeendpoint.UpdateListRequest{
 		ListID:   listID,
 		Name:     body.Name,
 		Settings: body.Settings,
@@ -89,5 +89,5 @@ func decodeDeleteListRequest(ctx context.Context, r *http.Request) (interface{},
 		return nil, err
 	}
 
-	return endpoint.DeleteListRequest{ListID: listID}, nil
+	return timeendpoint.DeleteListRequest{ListID: listID}, nil
 }

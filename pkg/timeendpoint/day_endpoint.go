@@ -1,9 +1,10 @@
-package endpoint
+package timeendpoint
 
 import (
 	"context"
-	"github.com/brumhard/geckgo/pkg/service"
 	"time"
+
+	"github.com/brumhard/geckgo/pkg/timeservice"
 
 	"github.com/go-kit/kit/endpoint"
 )
@@ -12,17 +13,17 @@ import (
 type AddDayRequest struct {
 	ListID  int `validate:"gte=0"`
 	Date    time.Time
-	Moments []service.Moment
+	Moments []timeservice.Moment `validate:"gt=0"`
 }
 
 type AddDayResponse struct {
-	Day *service.Day `json:"day"`
-	Err error        `json:"-"`
+	Day *timeservice.Day `json:"day"`
+	Err error            `json:"-"`
 }
 
-func (r AddDayResponse) error() error { return r.Err }
+func (r AddDayResponse) Failed() error { return r.Err }
 
-func makeAddDayEndpoint(s service.Service) endpoint.Endpoint {
+func makeAddDayEndpoint(s timeservice.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(AddDayRequest)
 		day, err := s.AddDay(ctx, req.ListID, req.Date, req.Moments)
@@ -40,13 +41,13 @@ type GetDaysRequest struct {
 }
 
 type GetDaysResponse struct {
-	Days []service.Day `json:"days"`
-	Err  error         `json:"-"`
+	Days []timeservice.Day `json:"days"`
+	Err  error             `json:"-"`
 }
 
-func (r GetDaysResponse) error() error { return r.Err }
+func (r GetDaysResponse) Failed() error { return r.Err }
 
-func makeGetDaysEndpoint(s service.Service) endpoint.Endpoint {
+func makeGetDaysEndpoint(s timeservice.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GetDaysRequest)
 		// TODO: add filtering options
@@ -66,20 +67,20 @@ type GetDayRequest struct {
 }
 
 type GetDayResponse struct {
-	Days *service.Day `json:"days"`
-	Err  error        `json:"-"`
+	Day *timeservice.Day `json:"day"`
+	Err error            `json:"-"`
 }
 
-func (r GetDayResponse) error() error { return r.Err }
+func (r GetDayResponse) Failed() error { return r.Err }
 
-func makeGetDayEndpoint(s service.Service) endpoint.Endpoint {
+func makeGetDayEndpoint(s timeservice.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GetDayRequest)
 		day, err := s.GetDay(ctx, req.ListID, req.Date)
 
 		return GetDayResponse{
-			Days: day,
-			Err:  err,
+			Day: day,
+			Err: err,
 		}, nil
 	}
 }
@@ -88,17 +89,17 @@ func makeGetDayEndpoint(s service.Service) endpoint.Endpoint {
 type UpdateDayRequest struct {
 	ListID  int `validate:"gte=0"`
 	Date    time.Time
-	Moments []service.Moment
+	Moments []timeservice.Moment
 }
 
 type UpdateDayResponse struct {
-	Days *service.Day `json:"days"`
-	Err  error        `json:"-"`
+	Days *timeservice.Day `json:"days"`
+	Err  error            `json:"-"`
 }
 
-func (r UpdateDayResponse) error() error { return r.Err }
+func (r UpdateDayResponse) Failed() error { return r.Err }
 
-func makeUpdateDayEndpoint(s service.Service) endpoint.Endpoint {
+func makeUpdateDayEndpoint(s timeservice.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateDayRequest)
 		day, err := s.UpdateDay(ctx, req.ListID, req.Date, req.Moments)
@@ -117,13 +118,12 @@ type DeleteDayRequest struct {
 }
 
 type DeleteDayResponse struct {
-	Days service.Day `json:"days"`
-	Err  error       `json:"-"`
+	Err error `json:"-"`
 }
 
-func (r DeleteDayResponse) error() error { return r.Err }
+func (r DeleteDayResponse) Failed() error { return r.Err }
 
-func makeDeleteDayEndpoint(s service.Service) endpoint.Endpoint {
+func makeDeleteDayEndpoint(s timeservice.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeleteDayRequest)
 		err := s.DeleteDay(ctx, req.ListID, req.Date)

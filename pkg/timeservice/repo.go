@@ -1,4 +1,4 @@
-package service
+package timeservice
 
 import (
 	"context"
@@ -178,7 +178,7 @@ func (r *repo) AddDay(ctx context.Context, listID int, day Day) error {
 	}
 
 	for _, moment := range day.Moments {
-		if _, err := insertStmt.ExecContext(ctx, moment.Time.UTC(), moment.Time.UTC(), moment.Type, listID); err != nil {
+		if _, err := insertStmt.ExecContext(ctx, day.Date.UTC(), moment.Time.UTC(), moment.Type, listID); err != nil {
 			return err
 		}
 	}

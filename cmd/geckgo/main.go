@@ -8,9 +8,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/brumhard/geckgo/pkg/endpoint"
-	"github.com/brumhard/geckgo/pkg/service"
-	"github.com/brumhard/geckgo/pkg/transport"
+	"github.com/brumhard/geckgo/pkg/timeendpoint"
+	"github.com/brumhard/geckgo/pkg/timeservice"
+	"github.com/brumhard/geckgo/pkg/timetransport"
 
 	"github.com/brumhard/alligotor"
 
@@ -102,9 +102,9 @@ func run() error {
 		}
 	}
 
-	repo := service.NewRepository(dbConnection, logger)
-	s := service.NewService(repo, logger)
-	endpoints := endpoint.New(s)
+	repo := timeservice.NewRepository(dbConnection, logger)
+	s := timeservice.NewService(repo, logger)
+	endpoints := timeendpoint.New(s)
 
-	return http.ListenAndServe(":"+strconv.Itoa(cfg.API.Port), transport.NewHTTPHandler(endpoints, logger))
+	return http.ListenAndServe(":"+strconv.Itoa(cfg.API.Port), timetransport.NewHTTPHandler(endpoints, logger))
 }
