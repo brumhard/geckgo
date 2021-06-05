@@ -36,6 +36,7 @@ func MarshalList(t *List) *geckgov1.List {
 	}
 
 	return &geckgov1.List{
+		Id:       int32(t.ID),
 		Name:     t.Name,
 		Settings: MarshalListSettings(t.Settings),
 	}
@@ -47,6 +48,7 @@ func UnmarshalList(t *geckgov1.List) *List {
 	}
 
 	return &List{
+		ID:       int(t.Id),
 		Name:     t.Name,
 		Settings: UnmarshalListSettings(t.Settings),
 	}

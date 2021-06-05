@@ -50,9 +50,8 @@ message GetListResponse{
 }
 
 message UpdateListRequest{
-  int32 list_id = 1;
   // TODO: use fieldmask here?
-  List list = 2;
+  List list = 1;
 }
 message UpdateListResponse{
   List list = 1;
@@ -132,8 +131,9 @@ message ListSettings{
 }
 
 message List {
-  string name = 1;
-  ListSettings settings = 2;
+  int32 id = 1;
+  string name = 2;
+  ListSettings settings = 3;
 }
 
 message Moment {

@@ -8,6 +8,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"go.uber.org/zap"
+
+	"google.golang.org/grpc/reflection"
+
 	geckgov1 "github.com/brumhard/geckgo/pkg/pb/geckgo/v1"
 	"github.com/brumhard/geckgo/pkg/service"
 	"google.golang.org/grpc"
@@ -99,8 +103,13 @@ func run() error {
 		}
 	}
 
+	// TODO: use propper logger
+	logger := zap.NewNop()
+	repo := service.NewRepository(dbConnection, logger)
+
 	grpcServer := grpc.NewServer()
-	geckgov1.RegisterGeckgoServiceServer(grpcServer, &service.Server{})
+	geckgov1.RegisterGeckgoServiceServer(grpcServer, service.NewServer(repo, logger))
+	reflection.Register(grpcServer)
 
 	lis, err := net.Listen("tcp", cfg.API.Addr)
 	if err != nil {

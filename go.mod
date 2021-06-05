@@ -8,7 +8,6 @@ require (
 	github.com/bufbuild/buf v0.43.2
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/containerd/continuity v0.0.0-20201208142359-180525291bb7 // indirect
-	github.com/go-kit/kit v0.10.0
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
 	github.com/hashicorp/errwrap v1.1.0 // indirect

@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/pkg/errors"
 
 	"github.com/jmoiron/sqlx"
-
-	"github.com/go-kit/kit/log"
 )
 
 type Repository interface {
@@ -31,10 +31,10 @@ var ErrNotFound = errors.New("not found")
 
 type repo struct {
 	db     *sqlx.DB
-	logger log.Logger
+	logger *zap.Logger
 }
 
-func NewRepository(db *sqlx.DB, logger log.Logger) Repository {
+func NewRepository(db *sqlx.DB, logger *zap.Logger) Repository {
 	return &repo{
 		db:     db,
 		logger: logger,

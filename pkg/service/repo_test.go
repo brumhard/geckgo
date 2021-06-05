@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang-migrate/migrate/v4"
+	"go.uber.org/zap"
 
-	"github.com/go-kit/kit/log"
+	"github.com/golang-migrate/migrate/v4"
 
 	"github.com/jmoiron/sqlx"
 	. "github.com/onsi/ginkgo"
@@ -86,7 +86,7 @@ var _ = Describe("repo", func() {
 		migrations *migrate.Migrate
 	)
 	BeforeEach(func() {
-		repo = NewRepository(db, log.NewNopLogger())
+		repo = NewRepository(db, zap.NewNop())
 
 		// move initialization to synchronized before suite
 		driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
