@@ -7,7 +7,7 @@ GOLANGCI_VERSION = 1.40.0
 # TOOLS
 
 # Go dependencies versioned through tools.go
-GO_DEPENDENCIES = google.golang.org/protobuf/cmd/protoc-gen-go \
+GO_TOOLS = google.golang.org/protobuf/cmd/protoc-gen-go \
 				google.golang.org/grpc/cmd/protoc-gen-go-grpc \
 				github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
 				github.com/bufbuild/buf/cmd/buf \
@@ -21,7 +21,7 @@ define make-go-dependency
 endef
 
 # this creates a target for each go dependency to be referenced in other targets
-$(foreach dep, $(GO_DEPENDENCIES), $(eval $(call make-go-dependency, $(dep))))
+$(foreach dep, $(GO_TOOLS), $(eval $(call make-go-dependency, $(dep))))
 
 bin/golangci-lint: bin/golangci-lint-$(GOLANGCI_VERSION)
 	@ln -sf golangci-lint-$(GOLANGCI_VERSION) $@
