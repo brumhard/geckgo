@@ -1,0 +1,13 @@
+version: v1beta1
+build:
+  roots:
+    - api
+    - protos
+lint:
+  use:
+    - DEFAULT
+  ignore:
+    - google
+breaking:
+  use:
+    - FILE

@@ -4,20 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
-	"os"
 	"strconv"
 
-	"github.com/brumhard/geckgo/pkg/timeendpoint"
-	"github.com/brumhard/geckgo/pkg/timeservice"
-	"github.com/brumhard/geckgo/pkg/timetransport"
+	geckgov1 "github.com/brumhard/geckgo/pkg/pb/geckgo/v1"
+	"github.com/brumhard/geckgo/pkg/service"
+	"google.golang.org/grpc"
 
 	"github.com/brumhard/alligotor"
 
 	"github.com/brumhard/geckgo/db"
 	"github.com/golang-migrate/migrate/v4/source/httpfs"
 
-	kitlog "github.com/go-kit/kit/log"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
@@ -41,7 +40,7 @@ func run() error {
 			DBName   string
 		}
 		API struct {
-			Port int
+			Addr string
 		}
 	}{
 		DB: struct {
@@ -56,9 +55,9 @@ func run() error {
 			Password: "Pass2020!",
 		},
 		API: struct {
-			Port int
+			Addr string
 		}{
-			Port: 8080,
+			Addr: ":8080",
 		},
 	}
 
@@ -66,8 +65,6 @@ func run() error {
 	if err := cfgLoader.Get(&cfg); err != nil {
 		return err
 	}
-
-	logger := kitlog.NewJSONLogger(os.Stdout)
 
 	connectString := fmt.Sprintf(
 		"host=localhost port=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -102,9 +99,13 @@ func run() error {
 		}
 	}
 
-	repo := timeservice.NewRepository(dbConnection, logger)
-	s := timeservice.NewService(repo, logger)
-	endpoints := timeendpoint.New(s)
+	grpcServer := grpc.NewServer()
+	geckgov1.RegisterGeckgoServiceServer(grpcServer, &service.Server{})
 
-	return http.ListenAndServe(":"+strconv.Itoa(cfg.API.Port), timetransport.NewHTTPHandler(endpoints, logger))
+	lis, err := net.Listen("tcp", cfg.API.Addr)
+	if err != nil {
+		return err
+	}
+
+	return grpcServer.Serve(lis)
 }

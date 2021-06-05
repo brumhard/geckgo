@@ -1,4 +1,4 @@
-package timeservice
+package service
 
 import (
 	"encoding/json"

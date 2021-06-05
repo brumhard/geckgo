@@ -1,13 +1,13 @@
-package timeservice
+package service
 
 import (
 	"context"
 	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
+	"go.uber.org/zap"
 
-	"github.com/go-kit/kit/log"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -41,10 +41,10 @@ type Service interface {
 
 type service struct {
 	repo   Repository
-	logger log.Logger
+	logger *zap.Logger
 }
 
-func NewService(repository Repository, logger log.Logger) Service {
+func NewService(repository Repository, logger *zap.Logger) Service {
 	return &service{
 		repo:   repository,
 		logger: logger,

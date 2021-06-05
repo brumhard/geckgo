@@ -1,0 +1,154 @@
+syntax = "proto3";
+
+package geckgo.v1;
+
+import "google/api/annotations.proto";
+//import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+// Defines the import path that should be used to import the generated package,
+// and the package name.
+option go_package = "github.com/brumhard/geckgo/pkg/pb;geckgov1";
+
+service GeckgoService {
+  rpc AddList(AddListRequest) returns (AddListResponse) {}
+  rpc GetLists(GetListsRequest) returns (GetListsResponse) {}
+  rpc GetList(GetListRequest) returns (GetListResponse) {}
+  rpc UpdateList(UpdateListRequest) returns (UpdateListResponse) {}
+  rpc DeleteList(DeleteListRequest) returns (DeleteListResponse) {}
+  rpc AddDay(AddDayRequest) returns (AddDayResponse) {}
+  rpc GetDays(GetDaysRequest) returns (GetDaysResponse) {}
+  rpc GetDay(GetDayRequest) returns (GetDayResponse) {}
+  rpc UpdateDay(UpdateDayRequest) returns (UpdateDayResponse) {}
+  rpc DeleteDay(DeleteDayRequest) returns (DeleteDayResponse) {}
+  rpc StartDay(StartDayRequest) returns (StartDayResponse) {}
+  rpc StartBreak(StartBreakRequest) returns (StartBreakResponse) {}
+  rpc EndBreak(EndBreakRequest) returns (EndBreakResponse) {}
+  rpc EndDay(EndDayRequest) returns (EndDayResponse) {}
+}
+
+message AddListRequest{
+  string name = 1;
+  ListSettings settings = 2;
+}
+message AddListResponse{
+  List list = 1;
+}
+
+message GetListsRequest{}
+message GetListsResponse{
+  repeated List lists = 1;
+}
+
+message GetListRequest{
+  int32 list_id = 1;
+}
+message GetListResponse{
+  List list = 1;
+}
+
+message UpdateListRequest{
+  int32 list_id = 1;
+  // TODO: use fieldmask here?
+  List list = 2;
+}
+message UpdateListResponse{
+  List list = 1;
+}
+
+message DeleteListRequest{
+  int32 list_id = 1;
+}
+message DeleteListResponse{}
+
+message AddDayRequest{
+  int32 list_id = 1;
+  google.protobuf.Timestamp date = 2;
+  repeated Moment moments = 3;
+}
+message AddDayResponse{
+  Day day = 1;
+}
+
+message GetDaysRequest{
+  int32 list_id = 1;
+}
+message GetDaysResponse{
+  repeated Day days = 1;
+}
+
+message GetDayRequest{
+  int32 list_id = 1;
+  google.protobuf.Timestamp date = 2;
+}
+message GetDayResponse{
+  Day day = 1;
+}
+
+message UpdateDayRequest{
+  int32 list_id = 1;
+  google.protobuf.Timestamp date = 2;
+  repeated Moment moments = 3;
+}
+message UpdateDayResponse{
+  Day day = 1;
+}
+
+message DeleteDayRequest{
+  int32 list_id = 1;
+  google.protobuf.Timestamp date = 2;
+}
+message DeleteDayResponse{}
+
+message StartDayRequest{
+  int32 list_id = 1;
+  google.protobuf.Timestamp time = 2;
+}
+message StartDayResponse{}
+
+message StartBreakRequest{
+  int32 list_id = 1;
+  google.protobuf.Timestamp time = 2;
+}
+message StartBreakResponse{}
+
+message EndBreakRequest{
+  int32 list_id = 1;
+  google.protobuf.Timestamp time = 2;
+}
+message EndBreakResponse{}
+
+message EndDayRequest{
+  int32 list_id = 1;
+  google.protobuf.Timestamp time = 2;
+}
+message EndDayResponse{}
+
+
+message ListSettings{
+  google.protobuf.Duration daily_time = 1;
+}
+
+message List {
+  string name = 1;
+  ListSettings settings = 2;
+}
+
+message Moment {
+  enum Type {
+    TYPE_UNSPECIFIED = 0;
+    TYPE_START = 1;
+    TYPE_START_BREAK = 2;
+    TYPE_END_BREAK = 3;
+    TYPE_END = 4;
+  }
+  Type type = 1;
+  google.protobuf.Timestamp time = 2;
+}
+
+message Day {
+  google.protobuf.Timestamp date = 1;
+  repeated Moment moments = 2;
+}
