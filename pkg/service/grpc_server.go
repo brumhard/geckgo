@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 
-	"github.com/brumhard/geckgo/pkg/pb/geckgo/v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	geckgov1 "github.com/brumhard/geckgo/pkg/pb/geckgo/v1"
 )
 
 type Server struct {
@@ -51,9 +52,9 @@ func (s *Server) GetList(ctx context.Context, req *geckgov1.GetListRequest) (*ge
 	return &geckgov1.GetListResponse{List: MarshalList(list)}, nil
 }
 
-//func (s *Server) UpdateList(ctx context.Context, req *geckgov1.UpdateListRequest) (*geckgov1.UpdateListResponse, error) {
-//	panic("implement me")
-//}
+// func (s *Server) UpdateList(ctx context.Context, req *geckgov1.UpdateListRequest) (*geckgov1.UpdateListResponse, error) {
+// 	 panic("implement me")
+// }
 
 func (s *Server) DeleteList(ctx context.Context, req *geckgov1.DeleteListRequest) (*geckgov1.DeleteListResponse, error) {
 	err := s.service.DeleteList(ctx, int(req.ListId))
@@ -101,9 +102,9 @@ func (s *Server) GetDay(ctx context.Context, req *geckgov1.GetDayRequest) (*geck
 	return &geckgov1.GetDayResponse{Day: MarshalDay(day)}, nil
 }
 
-//func (s *Server) UpdateDay(ctx context.Context, req *geckgov1.UpdateDayRequest) (*geckgov1.UpdateDayResponse, error) {
-//	panic("implement me")
-//}
+// func (s *Server) UpdateDay(ctx context.Context, req *geckgov1.UpdateDayRequest) (*geckgov1.UpdateDayResponse, error) {
+//   panic("implement me")
+// }
 
 func (s *Server) DeleteDay(ctx context.Context, req *geckgov1.DeleteDayRequest) (*geckgov1.DeleteDayResponse, error) {
 	err := s.service.DeleteDay(ctx, int(req.ListId), req.Date.AsTime())
@@ -152,6 +153,7 @@ func (s *Server) EndDay(ctx context.Context, req *geckgov1.EndDayRequest) (*geck
 
 func translateError(err error) error {
 	code := codes.Unknown
+
 	switch {
 	case errors.Is(err, ErrNotFound):
 		code = codes.NotFound

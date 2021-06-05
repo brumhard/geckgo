@@ -29,6 +29,18 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
+type Config struct {
+	DB struct {
+		Port     int
+		User     string
+		Password string
+		DBName   string
+	}
+	API struct {
+		Addr string
+	}
+}
+
 func main() {
 	if err := run(); err != nil {
 		log.Fatal(err)
@@ -36,17 +48,7 @@ func main() {
 }
 
 func run() error {
-	cfg := struct {
-		DB struct {
-			Port     int
-			User     string
-			Password string
-			DBName   string
-		}
-		API struct {
-			Addr string
-		}
-	}{
+	cfg := Config{
 		DB: struct {
 			Port     int
 			User     string
@@ -103,7 +105,7 @@ func run() error {
 		}
 	}
 
-	// TODO: use propper logger
+	// TODO: use proper logger
 	logger := zap.NewNop()
 	repo := service.NewRepository(dbConnection, logger)
 

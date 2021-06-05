@@ -220,7 +220,7 @@ func (r *repo) GetDays(ctx context.Context, listID int) ([]Day, error) {
 		return nil, err
 	}
 
-	var days []Day
+	days := make([]Day, 0, len(dateToMoments))
 	for date, moments := range dateToMoments {
 		days = append(days, Day{
 			Date:    date,

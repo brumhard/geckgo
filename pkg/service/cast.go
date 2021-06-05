@@ -90,8 +90,8 @@ func MarshalDay(t *Day) *geckgov1.Day {
 	}
 
 	moments := make([]*geckgov1.Moment, 0, len(t.Moments))
-	for _, m := range t.Moments {
-		moments = append(moments, MarshalMoment(&m))
+	for i := range t.Moments {
+		moments = append(moments, MarshalMoment(&t.Moments[i]))
 	}
 
 	return &geckgov1.Day{

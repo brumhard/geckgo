@@ -10,7 +10,7 @@ import "google/protobuf/duration.proto";
 
 // Defines the import path that should be used to import the generated package,
 // and the package name.
-option go_package = "github.com/brumhard/geckgo/pkg/pb;geckgov1";
+option go_package = "github.com/brumhard/geckgo/pkg/pb;v1";
 
 service GeckgoService {
   rpc AddList(AddListRequest) returns (AddListResponse) {}
