@@ -18,8 +18,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/lib/pq v1.10.0 // indirect
 	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect
-	github.com/nxadm/tail v1.4.6 // indirect
-	github.com/onsi/ginkgo v1.14.2
+	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.10.4
 	github.com/ory/dockertest/v3 v3.6.3
 	github.com/pkg/errors v0.9.1
